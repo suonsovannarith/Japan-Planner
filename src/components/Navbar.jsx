@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Compass, Calendar, MapPin, Train, DollarSign, CheckSquare, Moon, Sun, Share2, Sparkles } from 'lucide-react';
+import { Compass, Calendar, MapPin, Train, DollarSign, CheckSquare, Moon, Sun, Share2, Sparkles, FolderOpen, Save, Car } from 'lucide-react';
 
 export default function Navbar({
   activeTab,
@@ -8,17 +8,21 @@ export default function Navbar({
   setCurrency,
   theme,
   setTheme,
-  onOpenExport
+  onOpenExport,
+  savedTripsCount = 0,
+  onSaveTrip
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { id: 'planner', label: 'Plan Trip', icon: Sparkles },
     { id: 'itinerary', label: 'Day-by-Day', icon: Calendar },
-    { id: 'map', label: 'Japan Route Map', icon: MapPin },
-    { id: 'transport', label: 'Trains & Flights', icon: Train },
-    { id: 'budget', label: 'Estimated Costs', icon: DollarSign },
-    { id: 'prep', label: 'Travel Checklist', icon: CheckSquare },
+    { id: 'map', label: 'Route Map', icon: MapPin },
+    { id: 'transport', label: 'Transit', icon: Train },
+    { id: 'rentals', label: 'Rentals', icon: Car },
+    { id: 'budget', label: 'Costs', icon: DollarSign },
+    { id: 'prep', label: 'Checklist', icon: CheckSquare },
+    { id: 'trips', label: 'My Trips', icon: FolderOpen },
   ];
 
   return (
@@ -26,24 +30,27 @@ export default function Navbar({
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      backgroundColor: 'var(--bg-surface)',
+      width: '100%',
+      backdropFilter: 'blur(20px) saturate(1.4)',
+      WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+      backgroundColor: 'var(--nav-bg, var(--bg-surface))',
       borderBottom: '1px solid var(--border-subtle)',
-      transition: 'all 0.3s ease'
+      transition: 'all 0.3s ease',
+      boxShadow: '0 1px 14px rgba(0, 0, 0, 0.08)',
     }}>
-      <div className="container" style={{
+      {/* Edge-to-edge layout container: w-full px-6 lg:px-12 flex items-center justify-between */}
+      <div style={{
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         minHeight: '74px',
         height: 'auto',
-        paddingTop: '0.65rem',
-        paddingBottom: '0.65rem',
-        gap: '0.75rem',
+        padding: '0.65rem clamp(1.25rem, 3.2vw, 3rem)',
+        gap: '1rem',
         flexWrap: 'nowrap',
       }}>
-        {/* Brand */}
+        {/* Left Section: Brand Logo & Title with proper padding */}
         <div 
           onClick={() => setActiveTab('planner')}
           style={{
@@ -52,8 +59,8 @@ export default function Navbar({
             gap: '0.85rem',
             cursor: 'pointer',
             flexShrink: 0,
-            minWidth: 0,
-            userSelect: 'none'
+            userSelect: 'none',
+            paddingRight: '0.5rem',
           }}
           className="brand-container"
         >
@@ -126,11 +133,18 @@ export default function Navbar({
           </div>
         </div>
 
-        {/* Desktop Nav Items */}
-        <div style={{ display: 'none', alignItems: 'center', gap: '0.4rem' }} className="desktop-nav-menu">
+        {/* Center Section: Main navigation pills/tabs evenly spaced with adequate gap */}
+        <div style={{
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 'clamp(0.4rem, 1vw, 0.85rem)',
+          flex: 1,
+        }} className="desktop-nav-menu">
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
+            const isTrips = item.id === 'trips';
             return (
               <button
                 key={item.id}
@@ -139,26 +153,80 @@ export default function Navbar({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  padding: '0.55rem 0.95rem',
+                  padding: '0.55rem 0.9rem',
                   borderRadius: '10px',
-                  fontSize: '0.88rem',
+                  fontSize: '0.86rem',
                   fontWeight: isActive ? '700' : '500',
                   color: isActive ? '#ffffff' : 'var(--text-secondary)',
                   backgroundColor: isActive ? 'var(--accent-crimson)' : 'transparent',
                   boxShadow: isActive ? '0 4px 14px rgba(230, 57, 70, 0.35)' : 'none',
                   transition: 'all 0.2s ease',
+                  position: 'relative',
                 }}
                 className="interactive-nav-btn"
               >
                 <Icon size={16} />
                 <span>{item.label}</span>
+                {/* Trip count badge */}
+                {isTrips && savedTripsCount > 0 && !isActive && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: '#e63946',
+                    color: '#fff',
+                    fontSize: '0.65rem',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(230, 57, 70, 0.4)',
+                  }}>
+                    {savedTripsCount > 9 ? '9+' : savedTripsCount}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* Action Controls: Currency, Theme & Share */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+        {/* Right Section: Utility controls aligned cleanly to the far right */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          flexShrink: 0,
+          justifyContent: 'flex-end',
+        }}>
+          {/* Save Trip Button */}
+          {onSaveTrip && (activeTab === 'itinerary' || activeTab === 'map' || activeTab === 'transport' || activeTab === 'rentals' || activeTab === 'budget') && (
+            <button
+              onClick={onSaveTrip}
+              title="Save this trip"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.45rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(42, 157, 143, 0.4)',
+                backgroundColor: 'rgba(42, 157, 143, 0.12)',
+                color: 'var(--accent-matcha)',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                flexShrink: 0,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Save size={15} />
+              <span className="save-btn-text">Save</span>
+            </button>
+          )}
+
           {/* Currency Toggle */}
           <button
             onClick={() => setCurrency(currency === 'JPY' ? 'USD' : 'JPY')}
@@ -236,6 +304,7 @@ export default function Navbar({
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+          const isTrips = item.id === 'trips';
           return (
             <button
               key={item.id}
@@ -252,10 +321,29 @@ export default function Navbar({
                 color: isActive ? '#ffffff' : 'var(--text-secondary)',
                 backgroundColor: isActive ? 'var(--accent-crimson)' : 'transparent',
                 flexShrink: 0,
+                position: 'relative',
               }}
             >
               <Icon size={14} />
               <span>{item.label}</span>
+              {/* Trip count badge (mobile) */}
+              {isTrips && savedTripsCount > 0 && !isActive && (
+                <span style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: '#e63946',
+                  color: '#fff',
+                  fontSize: '0.6rem',
+                  fontWeight: '800',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginLeft: '2px',
+                }}>
+                  {savedTripsCount > 9 ? '9+' : savedTripsCount}
+                </span>
+              )}
             </button>
           );
         })}
@@ -272,6 +360,9 @@ export default function Navbar({
         }
         @media (max-width: 520px) {
           .export-btn-text {
+            display: none !important;
+          }
+          .save-btn-text {
             display: none !important;
           }
         }

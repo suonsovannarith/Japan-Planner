@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { 
   Clock, MapPin, Sparkles, Zap, Users, ArrowRight, ArrowLeft, 
-  Check, Landmark, Utensils, Gamepad2, Mountain, Building2, Brush, Wine, Compass, CheckCircle2, DollarSign, Wallet
+  Check, Landmark, Utensils, Gamepad2, Mountain, Building2, Brush, Wine, Compass, CheckCircle2, DollarSign, Wallet,
+  Plane, Sun, Sunset, Moon, BedDouble, Building, ExternalLink, ShieldCheck, Info
 } from 'lucide-react';
 import { INTEREST_CATEGORIES, PACE_OPTIONS, BUDGET_TIERS } from '../data/interests';
 import { JPY_PER_USD, formatDualPrice } from '../data/currency';
+import { AIRPORTS, ARRIVAL_TIME_SLOTS } from '../data/arrivalLogistics';
 
 // Icon Map helper
 const iconMap = {
@@ -33,6 +35,14 @@ export default function PlannerForm({
   setTravelers,
   targetBudget,
   setTargetBudget,
+  arrivalAirport = 'HND',
+  setArrivalAirport,
+  arrivalTime = 'afternoon',
+  setArrivalTime,
+  needAirportHotel = false,
+  setNeedAirportHotel,
+  selectedAirportHotel = null,
+  setSelectedAirportHotel,
   onGenerateItinerary
 }) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -70,59 +80,6 @@ export default function PlannerForm({
     { d: 28, label: '28 Days', sub: '1-Month Grand Expedition' }
   ];
 
-  // Starting Gateways with Airport / Station Hub Badges
-  const cities = [
-    {
-      id: 'tokyo',
-      name: 'Tokyo',
-      kanji: '東京',
-      hubBadge: 'Kanto Hub',
-      airport: 'Narita (NRT) / Haneda (HND)',
-      desc: 'Metropolis, cyberpunk nightlife, teamLab, Shibuya Crossing & ancient Asakusa',
-      image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
-      badge: 'Most Popular Starting Hub'
-    },
-    {
-      id: 'osaka',
-      name: 'Osaka',
-      kanji: '大阪',
-      hubBadge: 'Kansai Hub',
-      airport: 'Kansai Int\'l (KIX)',
-      desc: 'The nation’s culinary kitchen, lively Dotonbori neon, Kuidaore & Universal Studios',
-      image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=600&q=80',
-      badge: 'Food & Nightlife Gateway'
-    },
-    {
-      id: 'kyoto',
-      name: 'Kyoto',
-      kanji: '京都',
-      hubBadge: 'Cultural Heartland',
-      airport: 'via Kansai KIX / Shinkansen',
-      desc: '1,000-year imperial soul, 10,000 vermillion Torii gates, bamboo groves & Zen temples',
-      image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
-      badge: 'Historic & UNESCO Gem'
-    },
-    {
-      id: 'fukuoka',
-      name: 'Fukuoka',
-      kanji: '福岡',
-      hubBadge: 'Kyushu Hub',
-      airport: 'Fukuoka Int\'l (FUK)',
-      desc: 'Vibrant southern gateway famed for riverside open-air Yatai food carts & Hakata ramen',
-      image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
-      badge: 'Southern Gourmet & Hot Springs'
-    },
-    {
-      id: 'hokkaido',
-      name: 'Sapporo',
-      kanji: '札幌',
-      hubBadge: 'Hokkaido Hub',
-      airport: 'New Chitose (CTS)',
-      desc: 'Northern wilderness, champagne powder snow, Otaru romantic canal & miso ramen',
-      image: 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
-      badge: 'Alpine Nature & Snow'
-    }
-  ];
 
   const toggleInterest = (id) => {
     if (interests.includes(id)) {
@@ -136,7 +93,7 @@ export default function PlannerForm({
 
   const stepsMeta = [
     { num: 1, title: 'Trip Duration', short: 'Duration' },
-    { num: 2, title: 'Starting Gateway', short: 'Arrival Hub' },
+    { num: 2, title: 'Arrival Details & Airport Lodging', short: 'Arrival Hub' },
     { num: 3, title: 'Travel Passions', short: 'Vibes' },
     { num: 4, title: 'Pace & Budget', short: 'Pace & Budget' },
   ];
@@ -501,113 +458,514 @@ export default function PlannerForm({
           )}
 
           {/* ============================================================== */}
-          {/* PHASE 2: STARTING POINT & AIRPORT GATEWAY                     */}
+          {/* PHASE 2: ARRIVAL DETAILS & AIRPORT LODGING QUESTIONNAIRE       */}
           {/* ============================================================== */}
           {currentStep === 2 && (
-            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               
               <div>
                 <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.6rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
-                  Where do you want to start your journey?
+                  Arrival Logistics & First Night Stay
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
-                  Select your arrival hub. The entire itinerary, day sequence, and route map will adapt dynamically to originate from here!
+                  Tell us where and when your flight touches down in Japan. We will automatically calibrate your Day 1 schedule and offer curated transit-accessible airport accommodations.
                 </p>
               </div>
 
-              {/* Large Visual City Cards */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
-                gap: '1.25rem',
-              }}>
-                {cities.map((city) => {
-                  const isSelected = startingCity === city.id;
-                  return (
-                    <div
-                      key={city.id}
-                      onClick={() => setStartingCity(city.id)}
-                      className="glass-card interactive-hover"
-                      style={{
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        borderRadius: '18px',
-                        border: '2.5px solid',
-                        borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                        backgroundColor: 'var(--bg-surface-elevated)',
-                        boxShadow: isSelected ? '0 12px 30px rgba(230, 57, 70, 0.25)' : 'none',
-                        transition: 'all 0.25s ease',
-                        position: 'relative',
-                      }}
-                    >
-                      {/* Thumbnail Header */}
-                      <div style={{
-                        position: 'relative',
-                        height: '145px',
-                        backgroundImage: `url(${city.image})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(to top, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0.25) 100%)',
-                        }} />
+              {/* 1. Port of Entry Selection */}
+              <div>
+                <label style={{ fontSize: '0.9rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '1rem' }}>
+                  <Plane size={16} style={{ color: 'var(--accent-crimson)' }} />
+                  <span>1. Select Port of Entry (Arrival Airport Hub):</span>
+                </label>
 
-                        {/* Top Badges */}
-                        <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span className="badge" style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', color: '#fff', fontSize: '0.72rem' }}>
-                            {city.airport}
-                          </span>
-                          {isSelected && (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+                  gap: '1.1rem',
+                }}>
+                  {AIRPORTS.map((airport) => {
+                    const isSelected = arrivalAirport === airport.id;
+                    return (
+                      <div
+                        key={airport.id}
+                        onClick={() => {
+                          if (setArrivalAirport) setArrivalAirport(airport.id);
+                          if (setStartingCity) setStartingCity(airport.cityKey);
+                          if (setSelectedAirportHotel && airport.hotels && airport.hotels.length > 0) {
+                            setSelectedAirportHotel(airport.hotels[0]);
+                          }
+                        }}
+                        className="glass-card interactive-hover"
+                        style={{
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          borderRadius: '16px',
+                          border: '2.5px solid',
+                          borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                          backgroundColor: 'var(--bg-surface-elevated)',
+                          boxShadow: isSelected ? '0 12px 28px rgba(230, 57, 70, 0.25)' : 'none',
+                          transition: 'all 0.25s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        {/* Airport Header */}
+                        <div style={{
+                          height: '110px',
+                          backgroundImage: `url(${airport.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          position: 'relative',
+                          padding: '0.75rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(to top, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0.3) 100%)',
+                          }} />
+
+                          <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="badge" style={{ backgroundColor: '#e63946', color: '#fff', fontWeight: '800', fontSize: '0.85rem' }}>
+                              {airport.code}
+                            </span>
+                            {isSelected && (
+                              <div style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '50%',
+                                backgroundColor: '#fff',
+                                color: 'var(--accent-crimson)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 0 10px rgba(255, 255, 255, 0.8)',
+                              }}>
+                                <Check size={16} strokeWidth={3} />
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ position: 'relative' }}>
+                            <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#fff' }}>
+                              {airport.city}
+                            </div>
+                            <div className="kanji-text" style={{ fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
+                              {airport.kanji}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Airport Details */}
+                        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                              {airport.name}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--accent-matcha)', fontWeight: '600' }}>
+                              ⏱️ {airport.transferTime}
+                            </div>
+                            <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginTop: '0.35rem', lineHeight: 1.4 }}>
+                              {airport.transferSummary}
+                            </div>
+                          </div>
+
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.5rem' }}>
+                            💳 {airport.icCardPickup}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Initial Itinerary Gateway Confirmation */}
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.85rem 1.25rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                  border: '1px solid var(--border-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                }}>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                    🎯 <strong>First Destination City:</strong> Starting itinerary in{' '}
+                    <span style={{ color: 'var(--accent-crimson)', fontWeight: '800', textTransform: 'capitalize' }}>
+                      {startingCity}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    {['tokyo', 'osaka', 'kyoto', 'fukuoka', 'sapporo'].map(cKey => (
+                      <button
+                        key={cKey}
+                        type="button"
+                        onClick={() => setStartingCity && setStartingCity(cKey)}
+                        style={{
+                          padding: '0.25rem 0.65rem',
+                          borderRadius: '6px',
+                          fontSize: '0.76rem',
+                          fontWeight: startingCity === cKey ? '800' : '500',
+                          backgroundColor: startingCity === cKey ? 'var(--accent-crimson)' : 'transparent',
+                          color: startingCity === cKey ? '#fff' : 'var(--text-muted)',
+                          border: '1px solid',
+                          borderColor: startingCity === cKey ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                          cursor: 'pointer',
+                          textTransform: 'capitalize',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {cKey}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Estimated Arrival Time Selection */}
+              <div>
+                <label style={{ fontSize: '0.9rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '1rem' }}>
+                  <Clock size={16} style={{ color: 'var(--accent-gold)' }} />
+                  <span>2. Estimated Landing Time at Airport:</span>
+                </label>
+
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 210px), 1fr))',
+                  gap: '0.9rem',
+                }}>
+                  {ARRIVAL_TIME_SLOTS.map((slot) => {
+                    const isSelected = arrivalTime === slot.id;
+                    const SlotIcon = slot.icon === 'Sun' ? Sun : slot.icon === 'Sunset' ? Sunset : slot.icon === 'Moon' ? Moon : Plane;
+
+                    return (
+                      <div
+                        key={slot.id}
+                        onClick={() => setArrivalTime && setArrivalTime(slot.id)}
+                        className="glass-card interactive-hover"
+                        style={{
+                          padding: '1.1rem',
+                          cursor: 'pointer',
+                          borderRadius: '14px',
+                          border: '2px solid',
+                          borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.1)' : 'var(--bg-surface-elevated)',
+                          boxShadow: isSelected ? '0 8px 20px rgba(230, 57, 70, 0.2)' : 'none',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                             <div style={{
-                              width: '26px',
-                              height: '26px',
-                              borderRadius: '50%',
-                              backgroundColor: 'var(--accent-crimson)',
-                              color: '#fff',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '8px',
+                              backgroundColor: isSelected ? 'var(--accent-crimson)' : 'rgba(148, 163, 184, 0.15)',
+                              color: isSelected ? '#fff' : 'var(--text-primary)',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              boxShadow: '0 0 10px rgba(230, 57, 70, 0.8)',
                             }}>
-                              <Check size={16} strokeWidth={3} />
+                              <SlotIcon size={16} />
                             </div>
-                          )}
+                            {isSelected && (
+                              <CheckCircle2 size={18} style={{ color: 'var(--accent-crimson)' }} />
+                            )}
+                          </div>
+
+                          <div style={{ fontWeight: '800', fontSize: '0.95rem', color: isSelected ? 'var(--accent-crimson)' : 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                            {slot.label}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                            {slot.desc}
+                          </div>
                         </div>
 
-                        {/* City Name & Hub in image bottom */}
-                        <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '1.45rem', fontWeight: '800', color: '#fff' }}>
-                              {city.name}
-                            </span>
-                            <span className="kanji-text" style={{ fontSize: '1.1rem', color: 'var(--accent-gold)' }}>
-                              {city.kanji}
-                            </span>
-                          </div>
-                          <span className="badge badge-crimson" style={{ fontSize: '0.68rem', backgroundColor: 'rgba(230, 57, 70, 0.4)', color: '#fff' }}>
-                            {city.hubBadge}
-                          </span>
+                        <div style={{ marginTop: '0.85rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: '700' }}>
+                          ⚡ {slot.impact}
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-                      {/* Card Body */}
-                      <div style={{ padding: '1.1rem 1.25rem' }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-                          {city.desc}
-                        </div>
-                        <span className="badge badge-matcha" style={{ fontSize: '0.7rem' }}>
-                          {city.badge}
-                        </span>
+              {/* Dynamic Day 1 Calibration Notice Banner */}
+              <div style={{
+                padding: '1.1rem 1.4rem',
+                borderRadius: '14px',
+                border: '1px solid',
+                borderColor: (arrivalTime === 'evening' || arrivalTime === 'late-night') ? 'rgba(230, 57, 70, 0.35)' : 'rgba(42, 157, 143, 0.35)',
+                backgroundColor: (arrivalTime === 'evening' || arrivalTime === 'late-night') ? 'rgba(230, 57, 70, 0.08)' : 'rgba(42, 157, 143, 0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.9rem',
+              }}>
+                <span style={{ fontSize: '1.4rem' }}>
+                  {(arrivalTime === 'evening' || arrivalTime === 'late-night') ? '🛬' : '☀️'}
+                </span>
+                <div style={{ fontSize: '0.86rem', lineHeight: 1.5, color: 'var(--text-primary)' }}>
+                  {(arrivalTime === 'evening' || arrivalTime === 'late-night') ? (
+                    <>
+                      <strong>Dynamic Day 1 Calibration Active:</strong> Because your flight arrives in the {arrivalTime === 'late-night' ? 'late night' : 'evening'}, daytime sightseeing activities will be gracefully skipped on Day 1. Instead, your schedule will focus strictly on customs clearance, pocket WiFi / IC card pickup, stress-free hotel check-in, convenience store conbini snacks, and an unwinding casual dinner before starting full adventures on Day 2!
+                    </>
+                  ) : (
+                    <>
+                      <strong>Standard Daytime Arrival:</strong> Your daytime schedule is fully active. You will drop luggage at your hotel and begin exploring in the afternoon.
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. Airport Accommodation Assistance */}
+              <div>
+                <label style={{ fontSize: '0.9rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.75rem' }}>
+                  <BedDouble size={16} style={{ color: '#38bdf8' }} />
+                  <span>3. Airport Accommodation Assistance:</span>
+                </label>
+                <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  Do you need accommodations near the airport for Night 1?
+                </p>
+
+                {/* Yes/No Choice Toggle */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+                  gap: '1rem',
+                  marginBottom: '1.25rem',
+                }}>
+                  <div
+                    onClick={() => {
+                      if (setNeedAirportHotel) setNeedAirportHotel(false);
+                      if (setSelectedAirportHotel) setSelectedAirportHotel(null);
+                    }}
+                    className="glass-card interactive-hover"
+                    style={{
+                      padding: '1.25rem',
+                      cursor: 'pointer',
+                      borderRadius: '14px',
+                      border: '2px solid',
+                      borderColor: !needAirportHotel ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                      backgroundColor: !needAirportHotel ? 'rgba(230, 57, 70, 0.1)' : 'var(--bg-surface-elevated)',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.85rem',
+                    }}
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      backgroundColor: !needAirportHotel ? 'var(--accent-crimson)' : 'rgba(148, 163, 184, 0.15)',
+                      color: !needAirportHotel ? '#fff' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <Building size={20} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '800', fontSize: '0.95rem', color: !needAirportHotel ? 'var(--accent-crimson)' : 'var(--text-primary)' }}>
+                        No, I have my stay planned
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        Proceed directly into main city routing and hotels
                       </div>
                     </div>
-                  );
-                })}
+                    {!needAirportHotel && (
+                      <CheckCircle2 size={20} style={{ color: 'var(--accent-crimson)' }} />
+                    )}
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      if (setNeedAirportHotel) setNeedAirportHotel(true);
+                      const currentAirportObj = AIRPORTS.find(a => a.id === arrivalAirport) || AIRPORTS[0];
+                      if (setSelectedAirportHotel && currentAirportObj.hotels && currentAirportObj.hotels.length > 0) {
+                        setSelectedAirportHotel(currentAirportObj.hotels[0]);
+                      }
+                    }}
+                    className="glass-card interactive-hover"
+                    style={{
+                      padding: '1.25rem',
+                      cursor: 'pointer',
+                      borderRadius: '14px',
+                      border: '2px solid',
+                      borderColor: needAirportHotel ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                      backgroundColor: needAirportHotel ? 'rgba(230, 57, 70, 0.1)' : 'var(--bg-surface-elevated)',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.85rem',
+                    }}
+                  >
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      backgroundColor: needAirportHotel ? 'var(--accent-crimson)' : 'rgba(148, 163, 184, 0.15)',
+                      color: needAirportHotel ? '#fff' : 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      <BedDouble size={20} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '800', fontSize: '0.95rem', color: needAirportHotel ? 'var(--accent-crimson)' : 'var(--text-primary)' }}>
+                        Yes, show nearby transit stays
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        Suggest 2–3 curated transit-accessible hotels
+                      </div>
+                    </div>
+                    {needAirportHotel && (
+                      <CheckCircle2 size={20} style={{ color: 'var(--accent-crimson)' }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Curated Airport Hotels List (if user selected Yes) */}
+                {needAirportHotel && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.25rem' }}>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                      Curated Transit Hotels near {AIRPORTS.find(a => a.id === arrivalAirport)?.name || 'Arrival Airport'}:
+                    </div>
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+                      gap: '1rem',
+                    }}>
+                      {(() => {
+                        const currentAirportObj = AIRPORTS.find(a => a.id === arrivalAirport) || AIRPORTS[0];
+                        return currentAirportObj.hotels.map((hotel) => {
+                          const isHotelActive = selectedAirportHotel?.id === hotel.id || (!selectedAirportHotel && hotel === currentAirportObj.hotels[0]);
+                          const hotelPriceDual = formatDualPrice(hotel.priceJPY, budgetCurrency);
+
+                          return (
+                            <div
+                              key={hotel.id}
+                              onClick={() => setSelectedAirportHotel && setSelectedAirportHotel(hotel)}
+                              className="glass-card"
+                              style={{
+                                padding: '1.25rem',
+                                borderRadius: '16px',
+                                border: '2px solid',
+                                borderColor: isHotelActive ? 'var(--accent-matcha)' : 'var(--border-subtle)',
+                                backgroundColor: isHotelActive ? 'rgba(42, 157, 143, 0.08)' : 'var(--bg-surface-elevated)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                transition: 'all 0.2s ease',
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                  <span className="badge badge-matcha" style={{ fontSize: '0.7rem' }}>
+                                    {hotel.badge}
+                                  </span>
+                                  {isHotelActive && (
+                                    <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--accent-matcha)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                      <CheckCircle2 size={14} /> Selected
+                                    </span>
+                                  )}
+                                </div>
+
+                                <h4 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '0.3rem' }}>
+                                  {hotel.name}
+                                </h4>
+
+                                <div style={{ fontSize: '0.8rem', color: 'var(--accent-indigo)', fontWeight: '600', marginBottom: '0.5rem' }}>
+                                  📍 {hotel.distance}
+                                </div>
+
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: '0.85rem' }}>
+                                  💡 {hotel.tip}
+                                </div>
+
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '1rem' }}>
+                                  {hotel.features.map((feat, fIdx) => (
+                                    <span key={fIdx} style={{
+                                      padding: '0.15rem 0.5rem',
+                                      borderRadius: '6px',
+                                      backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                                      fontSize: '0.72rem',
+                                      color: 'var(--text-secondary)',
+                                    }}>
+                                      {feat}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div style={{
+                                borderTop: '1px solid var(--border-subtle)',
+                                paddingTop: '0.85rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                              }}>
+                                <div>
+                                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '700' }}>
+                                    Est. Night 1 Rate
+                                  </div>
+                                  <div style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--accent-gold)' }}>
+                                    {hotelPriceDual.primary}
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '500', marginLeft: '3px' }}>
+                                      ({hotelPriceDual.secondary})
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <a
+                                  href={hotel.bookingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.3rem',
+                                    padding: '0.4rem 0.75rem',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+                                    color: '#38bdf8',
+                                    fontSize: '0.78rem',
+                                    fontWeight: '700',
+                                    textDecoration: 'none',
+                                  }}
+                                >
+                                  <span>Details</span>
+                                  <ExternalLink size={12} />
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
               </div>
 
             </div>
           )}
+
 
           {/* ============================================================== */}
           {/* PHASE 3: TRAVEL VIBE & INTERESTS                               */}

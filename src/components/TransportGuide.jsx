@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Train, Plane, Car, CreditCard, AlertTriangle, CheckCircle2, HelpCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Train, Plane, Car, CreditCard, AlertTriangle, CheckCircle2, HelpCircle, ArrowRight, ShieldCheck, Compass, Calendar } from 'lucide-react';
 import { TRANSPORT_PASSES } from '../data/destinations';
 import { formatDualPrice } from '../data/currency';
+import DailyTransitAssistant from './DailyTransitAssistant';
 
 export default function TransportGuide({ itinerary, currency }) {
-  const [activeCategory, setActiveCategory] = useState('trains');
+  const [activeCategory, setActiveCategory] = useState('daily');
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
 
   const categories = [
+    { id: 'daily', label: 'Day-by-Day Transit Hub', icon: Compass, badge: 'Interactive Assistant' },
     { id: 'trains', label: 'Trains & Shinkansen', icon: Train, badge: 'Most Essential' },
     { id: 'planes', label: 'Domestic Flights', icon: Plane, badge: 'Long Distance' },
     { id: 'automobiles', label: 'Automobiles & Car Rental', icon: Car, badge: 'Scenic Alps/Rural' },
@@ -127,6 +130,73 @@ export default function TransportGuide({ itinerary, currency }) {
         </div>
 
         {/* Category Content */}
+        {activeCategory === 'daily' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '0.25rem' }}>
+                    Itinerary Multi-Modal Transit Assistant
+                  </h3>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', margin: 0 }}>
+                    Select any day of your trip to inspect color-coded subway lines, bus boarding rules, transfer stations, IC card fares, and taxi recommendations.
+                  </p>
+                </div>
+              </div>
+
+              {/* Day Selection Pills */}
+              {itinerary?.days && itinerary.days.length > 0 && (
+                <div style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  overflowX: 'auto',
+                  paddingBottom: '0.5rem',
+                  marginBottom: '1rem',
+                }}>
+                  {itinerary.days.map((d, dIdx) => {
+                    const isSelected = selectedDayIndex === dIdx;
+                    return (
+                      <button
+                        key={d.dayNumber}
+                        type="button"
+                        onClick={() => setSelectedDayIndex(dIdx)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.45rem 0.85rem',
+                          borderRadius: '8px',
+                          fontSize: '0.82rem',
+                          fontWeight: isSelected ? '800' : '600',
+                          backgroundColor: isSelected ? 'var(--accent-crimson)' : 'var(--bg-surface-elevated)',
+                          color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                          border: '1px solid',
+                          borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <Calendar size={13} />
+                        <span>Day {d.dayNumber}: {d.cityName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Day Transit Card */}
+              {itinerary?.days && itinerary.days[selectedDayIndex] ? (
+                <DailyTransitAssistant day={itinerary.days[selectedDayIndex]} currency={currency} />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
+                  Plan a trip in the planner to unlock custom daily transit hops!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeCategory === 'trains' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '1.5rem' }}>
             

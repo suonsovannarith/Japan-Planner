@@ -1,17 +1,40 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import PlannerForm from './components/PlannerForm';
 import ItineraryView from './components/ItineraryView';
-import JapanMap from './components/JapanMap';
+import InteractiveMap from './components/InteractiveMap';
 import TransportGuide from './components/TransportGuide';
 import CostBreakdown from './components/CostBreakdown';
 import TripPrep from './components/TripPrep';
 import ShareExportModal from './components/ShareExportModal';
 import Footer from './components/Footer';
 import SakuraBackground from './components/SakuraBackground';
+import MyTrips from './components/MyTrips';
+import SaveTripModal from './components/SaveTripModal';
+import VehicleRentals from './components/VehicleRentals';
 import { generateSmartItinerary } from './data/itineraryGenerator';
+
+// localStorage helpers for saved trips
+const TRIPS_STORAGE_KEY = 'komorebi_saved_trips';
+
+function loadSavedTrips() {
+  try {
+    const raw = localStorage.getItem(TRIPS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistTrips(trips) {
+  try {
+    localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(trips));
+  } catch {
+    // ignore storage errors
+  }
+}
 
 export default function App() {
   // Theme state: defaults to 'light' (airy sakura theme) with localStorage persistence
@@ -35,6 +58,16 @@ export default function App() {
   const [budget, setBudget] = useState('mid');
   const [travelers, setTravelers] = useState(2);
   const [targetBudget, setTargetBudget] = useState(null);
+
+  // Arrival Logistics state
+  const [arrivalAirport, setArrivalAirport] = useState('HND');
+  const [arrivalTime, setArrivalTime] = useState('afternoon');
+  const [needAirportHotel, setNeedAirportHotel] = useState(false);
+  const [selectedAirportHotel, setSelectedAirportHotel] = useState(null);
+
+  // Multi-trip state
+  const [savedTrips, setSavedTrips] = useState(() => loadSavedTrips());
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   // Sync theme attribute to document body and save preference
   useEffect(() => {
@@ -70,9 +103,13 @@ export default function App() {
       pace,
       budget,
       travelers,
-      targetBudget
+      targetBudget,
+      arrivalAirport,
+      arrivalTime,
+      needAirportHotel,
+      selectedAirportHotel
     });
-  }, [duration, startingCity, interests, pace, budget, travelers, targetBudget]);
+  }, [duration, startingCity, interests, pace, budget, travelers, targetBudget, arrivalAirport, arrivalTime, needAirportHotel, selectedAirportHotel]);
 
   // Trigger celebration and navigate to itinerary view
   const handleGenerateItinerary = () => {
@@ -114,6 +151,73 @@ export default function App() {
     }, 100);
   };
 
+  // --- Multi-Trip Management ---
+  const handleSaveTrip = useCallback((tripName) => {
+    const newTrip = {
+      id: `trip_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      name: tripName,
+      savedAt: Date.now(),
+      // Store the configuration so we can regenerate
+      config: {
+        duration,
+        startingCity,
+        interests: [...interests],
+        pace,
+        budget,
+        travelers,
+        targetBudget,
+        arrivalAirport,
+        arrivalTime,
+        needAirportHotel,
+        selectedAirportHotel,
+      },
+      // Store the summary for card display without regenerating
+      summary: itinerary?.summary ? { ...itinerary.summary } : null,
+    };
+
+    const updated = [newTrip, ...savedTrips];
+    setSavedTrips(updated);
+    persistTrips(updated);
+    setIsSaveModalOpen(false);
+
+    // Show success confetti
+    try {
+      confetti({
+        particleCount: 40,
+        spread: 50,
+        origin: { y: 0.7 },
+        colors: ['#2dd4bf', '#f4a261', '#60a5fa'],
+      });
+    } catch {}
+  }, [savedTrips, duration, startingCity, interests, pace, budget, travelers, targetBudget, itinerary]);
+
+  const handleDeleteTrip = useCallback((tripId) => {
+    const updated = savedTrips.filter(t => t.id !== tripId);
+    setSavedTrips(updated);
+    persistTrips(updated);
+  }, [savedTrips]);
+
+  const handleLoadTrip = useCallback((trip) => {
+    if (trip.config) {
+      setDuration(trip.config.duration);
+      setStartingCity(trip.config.startingCity);
+      setInterests(trip.config.interests);
+      setPace(trip.config.pace);
+      setBudget(trip.config.budget);
+      setTravelers(trip.config.travelers);
+      setTargetBudget(trip.config.targetBudget);
+      if (trip.config.arrivalAirport) setArrivalAirport(trip.config.arrivalAirport);
+      if (trip.config.arrivalTime) setArrivalTime(trip.config.arrivalTime);
+      if (trip.config.needAirportHotel !== undefined) setNeedAirportHotel(trip.config.needAirportHotel);
+      if (trip.config.selectedAirportHotel !== undefined) setSelectedAirportHotel(trip.config.selectedAirportHotel);
+    }
+    setActiveTab('itinerary');
+    setTimeout(() => {
+      const el = document.getElementById('itinerary-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
       
@@ -129,6 +233,8 @@ export default function App() {
         theme={theme}
         setTheme={setTheme}
         onOpenExport={() => setIsExportOpen(true)}
+        savedTripsCount={savedTrips.length}
+        onSaveTrip={() => setIsSaveModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -158,6 +264,14 @@ export default function App() {
             setTravelers={setTravelers}
             targetBudget={targetBudget}
             setTargetBudget={setTargetBudget}
+            arrivalAirport={arrivalAirport}
+            setArrivalAirport={setArrivalAirport}
+            arrivalTime={arrivalTime}
+            setArrivalTime={setArrivalTime}
+            needAirportHotel={needAirportHotel}
+            setNeedAirportHotel={setNeedAirportHotel}
+            selectedAirportHotel={selectedAirportHotel}
+            setSelectedAirportHotel={setSelectedAirportHotel}
             onGenerateItinerary={handleGenerateItinerary}
           />
         )}
@@ -176,11 +290,12 @@ export default function App() {
               }, 100);
             }}
             onOpenExport={() => setIsExportOpen(true)}
+            onSaveTrip={() => setIsSaveModalOpen(true)}
           />
         )}
 
         {activeTab === 'map' && (
-          <JapanMap
+          <InteractiveMap
             itinerary={itinerary}
             selectedCityKey={selectedMapCity}
             onSelectCity={setSelectedMapCity}
@@ -191,6 +306,13 @@ export default function App() {
           <TransportGuide
             itinerary={itinerary}
             currency={currency}
+          />
+        )}
+
+        {activeTab === 'rentals' && (
+          <VehicleRentals
+            currency={currency}
+            selectedAirport={arrivalAirport}
           />
         )}
 
@@ -205,6 +327,15 @@ export default function App() {
         {activeTab === 'prep' && (
           <TripPrep />
         )}
+
+        {activeTab === 'trips' && (
+          <MyTrips
+            savedTrips={savedTrips}
+            onLoadTrip={handleLoadTrip}
+            onDeleteTrip={handleDeleteTrip}
+            onNewTrip={() => setActiveTab('planner')}
+          />
+        )}
       </main>
 
       {/* Footer */}
@@ -214,6 +345,14 @@ export default function App() {
       <ShareExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
+        itinerary={itinerary}
+      />
+
+      {/* Save Trip Modal */}
+      <SaveTripModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSave={handleSaveTrip}
         itinerary={itinerary}
       />
     </div>

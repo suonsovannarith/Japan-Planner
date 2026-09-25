@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { 
   Calendar, Train, Clock, MapPin, DollarSign, Lightbulb, 
   CheckCircle, Bookmark, ExternalLink, ChevronDown, ChevronUp, Sparkles, 
-  ArrowRight, Share2, Copy, Check, RotateCcw, Compass, Sun, Sunset, Moon, Ticket, Wallet
+  ArrowRight, Share2, Copy, Check, RotateCcw, Compass, Sun, Sunset, Moon, Ticket, Wallet, Save, Plane
 } from 'lucide-react';
 import { formatDualPrice, JPY_PER_USD } from '../data/currency';
+import DailyTransitAssistant from './DailyTransitAssistant';
 
 export default function ItineraryView({ 
   itinerary, 
@@ -12,7 +13,8 @@ export default function ItineraryView({
   setCurrency,
   onViewCityOnMap, 
   onRestartCustomizer,
-  onOpenExport 
+  onOpenExport,
+  onSaveTrip 
 }) {
   const [selectedDayFilter, setSelectedDayFilter] = useState('all');
   const [expandedDays, setExpandedDays] = useState({});
@@ -77,11 +79,12 @@ export default function ItineraryView({
   const totalDual = formatDualPrice(itinerary.summary.grandTotalJPY, currency);
   const dailyDual = formatDualPrice(itinerary.summary.dailyAverageJPY, currency);
 
-  // Time Slot Configuration with visual icons
+  // Time Slot Configuration with strict chronological visual icons
   const slotConfig = {
-    morning: { label: 'Morning', icon: Sun, color: '#f4a261', time: '09:00 - 12:30' },
-    afternoon: { label: 'Afternoon', icon: Sunset, color: '#ff4d6d', time: '13:30 - 17:00' },
-    evening: { label: 'Evening', icon: Moon, color: '#a78bfa', time: '18:00 - 21:30' },
+    morning: { label: 'Morning', icon: Sun, color: '#f4a261', time: '08:30 – 12:00' },
+    afternoon: { label: 'Afternoon', icon: Sunset, color: '#ff4d6d', time: '12:30 – 17:00' },
+    evening: { label: 'Evening / Night', icon: Moon, color: '#a78bfa', time: '18:00 – 21:30+' },
+    night: { label: 'Late Night', icon: Moon, color: '#a78bfa', time: '21:30+' },
     'full-day': { label: 'Full Day', icon: Sparkles, color: '#00b4d8', time: 'All Day Event' }
   };
 
@@ -344,6 +347,19 @@ export default function ItineraryView({
                 >
                   <Share2 size={15} />
                   <span>Export / PDF</span>
+                </button>
+              )}
+
+              {/* Save Trip Button */}
+              {onSaveTrip && (
+                <button
+                  type="button"
+                  onClick={onSaveTrip}
+                  className="btn-secondary"
+                  style={{ padding: '0.55rem 1rem', fontSize: '0.85rem', gap: '0.4rem' }}
+                >
+                  <Save size={15} style={{ color: 'var(--accent-matcha)' }} />
+                  <span>Save Trip</span>
                 </button>
               )}
 
@@ -692,27 +708,65 @@ export default function ItineraryView({
                       {!isCollapsed && (
                         <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                           
-                          {day.activities.map((act, actIdx) => {
-                            const actKey = `${day.dayNumber}-${actIdx}`;
-                            const isDone = completedActivities[actKey];
-                            const slot = slotConfig[act.timeSlot] || slotConfig.morning;
-                            const SlotIcon = slot.icon;
-                            const actPriceDual = formatDualPrice(act.cost, currency);
+                          {/* Day 1 Arrival Calibration Notification */}
+                          {day.isArrivalCalibrated && (
+                            <div style={{
+                              padding: '1rem 1.25rem',
+                              borderRadius: '12px',
+                              backgroundColor: 'rgba(230, 57, 70, 0.08)',
+                              border: '1px solid rgba(230, 57, 70, 0.3)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.85rem',
+                            }}>
+                              <div style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '10px',
+                                backgroundColor: 'rgba(230, 57, 70, 0.2)',
+                                color: 'var(--accent-crimson)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}>
+                                <Plane size={18} />
+                              </div>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                                <strong style={{ color: 'var(--accent-crimson)' }}>🛬 Day 1 Calibrated for Evening Arrival:</strong>{' '}
+                                Daytime sightseeing has been intentionally relaxed to allow airport customs, pocket WiFi pickup, luggage drop, convenience store conbini snacks, and a cozy bowl of ramen before starting full exploration on Day 2.
+                              </div>
+                            </div>
+                          )}
 
-                            return (
-                              <div
-                                key={actIdx}
-                                style={{
-                                  padding: '1.25rem',
-                                  borderRadius: '14px',
-                                  backgroundColor: isDone ? 'rgba(42, 157, 143, 0.08)' : 'var(--bg-surface-elevated)',
-                                  border: '1px solid',
-                                  borderColor: isDone ? 'rgba(42, 157, 143, 0.35)' : 'var(--border-subtle)',
-                                  transition: 'all 0.25s ease',
-                                  display: 'flex',
-                                  gap: '1rem',
-                                }}
-                              >
+                          {/* Strictly Chronological Sorted Activities: Morning -> Afternoon -> Evening */}
+                          {(() => {
+                            const TIME_ORDER = { morning: 1, afternoon: 2, evening: 3, night: 4, 'full-day': 0 };
+                            const sortedActivities = [...day.activities].sort((a, b) => {
+                              return (TIME_ORDER[a.timeSlot] || 2) - (TIME_ORDER[b.timeSlot] || 2);
+                            });
+
+                            return sortedActivities.map((act, actIdx) => {
+                              const actKey = `${day.dayNumber}-${actIdx}`;
+                              const isDone = completedActivities[actKey];
+                              const slot = slotConfig[act.timeSlot] || slotConfig.morning;
+                              const SlotIcon = slot.icon;
+                              const actPriceDual = formatDualPrice(act.cost, currency);
+
+                              return (
+                                <div
+                                  key={actIdx}
+                                  style={{
+                                    padding: '1.25rem',
+                                    borderRadius: '14px',
+                                    backgroundColor: isDone ? 'rgba(42, 157, 143, 0.08)' : 'var(--bg-surface-elevated)',
+                                    border: '1px solid',
+                                    borderColor: isDone ? 'rgba(42, 157, 143, 0.35)' : 'var(--border-subtle)',
+                                    transition: 'all 0.25s ease',
+                                    display: 'flex',
+                                    gap: '1rem',
+                                  }}
+                                >
                                 {/* Activity Checkbox Tracker */}
                                 <button
                                   type="button"
@@ -809,7 +863,11 @@ export default function ItineraryView({
                                 </div>
                               </div>
                             );
-                          })}
+                          });
+                        })()}
+
+                          {/* Multi-Modal Daily Transit Hub */}
+                          <DailyTransitAssistant day={day} currency={currency} />
 
                           {/* Day Footer with Insider Cultural Tip & Category Costs */}
                           <div style={{

@@ -1,5 +1,15 @@
 import { CITIES, TRANSPORT_PASSES } from './destinations.js';
 import { JPY_PER_USD } from './currency.js';
+import { AIRPORTS } from './arrivalLogistics.js';
+import { CITY_TRANSIT_PROFILES, getIntercityTransitDetails } from './transitData.js';
+
+const TIME_SLOT_ORDER = {
+  morning: 1,
+  afternoon: 2,
+  evening: 3,
+  night: 4,
+  'full-day': 0
+};
 
 export function generateSmartItinerary({
   duration = 7,
@@ -8,7 +18,11 @@ export function generateSmartItinerary({
   pace = 'balanced',
   budget = 'mid',
   travelers = 1,
-  targetBudget = null // Optional user target budget in JPY
+  targetBudget = null, // Optional user target budget in JPY
+  arrivalAirport = 'HND',
+  arrivalTime = 'afternoon',
+  needAirportHotel = false,
+  selectedAirportHotel = null
 }) {
   const numDays = Math.max(3, Math.min(30, Number(duration)));
   const days = [];
@@ -62,20 +76,139 @@ export function generateSmartItinerary({
       totalTransitCostJPY += localDailyTransit;
     }
 
-    // Select curated activities matching interests and pace
-    const cityHighlights = [...city.highlights];
-    
-    // Sort or filter by user interests
-    cityHighlights.sort((a, b) => {
-      const aMatch = interests.includes(a.category) ? 1 : 0;
-      const bMatch = interests.includes(b.category) ? 1 : 0;
-      return bMatch - aMatch;
+    let selectedActivities = [];
+
+    // DAY 1 CALIBRATION: If arriving in Evening or Late Night
+    const isLateArrival = (arrivalTime === 'evening' || arrivalTime === 'late-night');
+    if (d === 0 && isLateArrival) {
+      const airportObj = AIRPORTS.find(a => a.id === arrivalAirport) || AIRPORTS[0];
+      const hotelStay = selectedAirportHotel || (airportObj.hotels && airportObj.hotels[0]);
+
+      if (needAirportHotel) {
+        selectedActivities = [
+          {
+            name: `Touchdown at ${airportObj.code} & Airport Customs`,
+            kanji: '到着 / 入国審査',
+            category: 'metropolis',
+            timeSlot: 'afternoon',
+            duration: '1.5 hrs',
+            cost: 0,
+            description: `Clear immigration at ${airportObj.name}. Pick up your physical Welcome Suica/Pasmo IC card and pocket WiFi router at the terminal arrivals hall counter.`,
+            tip: 'Use the 7-Bank ATM in the terminal to withdraw yen with no foreign transaction fee.'
+          },
+          {
+            name: `Check-in at ${hotelStay.name}`,
+            kanji: '空港ホテル チェックイン',
+            category: 'metropolis',
+            timeSlot: 'evening',
+            duration: '1 hr',
+            cost: 0,
+            description: `${hotelStay.type} (${hotelStay.badge}). Settle in, take a hot shower, and unwind with zero train commuting stress on night 1.`,
+            tip: hotelStay.tip || 'Rest up early so you can catch the morning express train into central Japan.'
+          },
+          {
+            name: 'Late-Night Japanese Conbini Run & Ramen',
+            kanji: 'コンビニ探訪 & ラーメン',
+            category: 'food',
+            timeSlot: 'evening',
+            duration: '1.5 hrs',
+            cost: 1400,
+            description: 'Experience your first Japanese convenience store (7-Eleven / Lawson / FamilyMart). Grab egg salad sandwiches, onigiri rice balls, hot fried chicken, and a steaming bowl of airport ramen.',
+            tip: 'Try Pocari Sweat or chilled green tea to rehydrate after pressurized aircraft cabin air.'
+          }
+        ];
+      } else {
+        selectedActivities = [
+          {
+            name: `Arrival at ${airportObj.code} & Express Transit into ${city.name}`,
+            kanji: '空港到着 & 特急アクセス',
+            category: 'metropolis',
+            timeSlot: 'afternoon',
+            duration: '2 hrs',
+            cost: 0,
+            description: `Touch down at ${airportObj.name}. Clear customs, retrieve pocket WiFi / e-SIM, and board the ${airportObj.transferSummary} into ${city.name}.`,
+            tip: `${airportObj.icCardPickup}. Pick up your IC card right outside the terminal gates.`
+          },
+          {
+            name: `${city.name} Hotel Check-In & Luggage Drop`,
+            kanji: 'ホテル チェックイン',
+            category: 'metropolis',
+            timeSlot: 'evening',
+            duration: '1 hr',
+            cost: 0,
+            description: `Check into your accommodation in ${city.name}. Freshen up with a hot shower and drop your bags before heading out for a relaxing neighborhood stroll.`,
+            tip: 'Most Japanese hotels provide fresh yukata / pajamas and slippers in the room.'
+          },
+          {
+            name: 'Japanese Convenience Store Run & Welcome Dinner',
+            kanji: 'コンビニ探訪 & 歓迎夕食',
+            category: 'food',
+            timeSlot: 'evening',
+            duration: '2 hrs',
+            cost: 2200,
+            description: 'Explore a local Japanese convenience store for iconic snacks and drinks, followed by a cozy neighborhood ramen shop or casual yakitori izakaya near your hotel.',
+            tip: 'Keep Day 1 light and relaxing to recover from jet lag so you can start Day 2 early and fully energized.'
+          }
+        ];
+      }
+    } else {
+      // Standard selection: curated activities matching interests and pace
+      const cityHighlights = [...city.highlights];
+      
+      // Sort or filter by user interests
+      cityHighlights.sort((a, b) => {
+        const aMatch = interests.includes(a.category) ? 1 : 0;
+        const bMatch = interests.includes(b.category) ? 1 : 0;
+        return bMatch - aMatch;
+      });
+
+      const spotsCount = pace === 'relaxed' ? 2 : pace === 'packed' ? 4 : 3;
+
+      // Group city highlights by time slot to balance the day
+      const morningPool = cityHighlights.filter(h => h.timeSlot === 'morning');
+      const afternoonPool = cityHighlights.filter(h => h.timeSlot === 'afternoon');
+      const eveningPool = cityHighlights.filter(h => h.timeSlot === 'evening');
+
+      const picks = [];
+      if (spotsCount === 2) {
+        if (morningPool.length > 0) picks.push(morningPool[0]);
+        else if (afternoonPool.length > 0) picks.push(afternoonPool[0]);
+        if (eveningPool.length > 0) picks.push(eveningPool[0]);
+        else if (afternoonPool.length > 1) picks.push(afternoonPool[1]);
+      } else if (spotsCount === 3) {
+        if (morningPool.length > 0) picks.push(morningPool[0]);
+        if (afternoonPool.length > 0) picks.push(afternoonPool[0]);
+        if (eveningPool.length > 0) picks.push(eveningPool[0]);
+      } else {
+        // 4 spots
+        if (morningPool.length > 0) picks.push(morningPool[0]);
+        if (afternoonPool.length > 0) picks.push(afternoonPool[0]);
+        if (afternoonPool.length > 1) picks.push(afternoonPool[1]);
+        if (eveningPool.length > 0) picks.push(eveningPool[0]);
+      }
+
+      // If any pool was empty, fill from remaining sorted highlights
+      if (picks.length < spotsCount) {
+        for (const h of cityHighlights) {
+          if (!picks.some(p => p.name === h.name)) {
+            picks.push(h);
+            if (picks.length >= spotsCount) break;
+          }
+        }
+      }
+
+      selectedActivities = picks.slice(0, spotsCount);
+    }
+
+    // STRICT CHRONOLOGICAL ORDER ENFORCEMENT: Morning -> Afternoon -> Evening -> Night
+    selectedActivities.sort((a, b) => {
+      const orderA = TIME_SLOT_ORDER[a.timeSlot] || 2;
+      const orderB = TIME_SLOT_ORDER[b.timeSlot] || 2;
+      return orderA - orderB;
     });
 
-    const spotsCount = pace === 'relaxed' ? 2 : pace === 'packed' ? 4 : 3;
-    const selectedActivities = cityHighlights.slice(0, spotsCount).map(act => {
+    selectedActivities.forEach(act => {
       totalActivitiesCostJPY += act.cost;
-      return act;
     });
 
     // Hotel estimation for the night
@@ -85,6 +218,11 @@ export function generateSmartItinerary({
     // Food estimation for the day
     const dailyFood = currentMultiplier.food;
     totalFoodCostJPY += dailyFood;
+
+    // Multi-modal transit details for this day
+    const multimodalTransit = transitHop
+      ? getIntercityTransitDetails(prevCityKey, currentCityKey)
+      : (CITY_TRANSIT_PROFILES[currentCityKey] || CITY_TRANSIT_PROFILES.tokyo);
 
     days.push({
       dayNumber: dayNum,
@@ -96,6 +234,11 @@ export function generateSmartItinerary({
       tagline: city.tagline,
       coordinates: city.coordinates,
       transitHop,
+      multimodalTransit,
+      isArrivalCalibrated: d === 0 && isLateArrival,
+      arrivalAirport,
+      arrivalTime,
+      needAirportHotel,
       activities: selectedActivities,
       estimatedDailyCost: {
         hotelJPY: hotelCost,
