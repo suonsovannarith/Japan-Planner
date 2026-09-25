@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Train, Plane, Car, CreditCard, AlertTriangle, CheckCircle2, HelpCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { TRANSPORT_PASSES } from '../data/destinations';
+import { formatDualPrice } from '../data/currency';
 
 export default function TransportGuide({ itinerary, currency }) {
   const [activeCategory, setActiveCategory] = useState('trains');
@@ -13,11 +14,9 @@ export default function TransportGuide({ itinerary, currency }) {
   ];
 
   const formatPrice = (jpy) => {
-    if (currency === 'USD') {
-      return `$${Math.round(jpy / 149)}`;
-    }
-    return `¥${jpy.toLocaleString()}`;
+    return formatDualPrice(jpy, currency).full;
   };
+
 
   const passVerdict = itinerary?.summary?.passRecommendation;
 
@@ -206,9 +205,9 @@ export default function TransportGuide({ itinerary, currency }) {
               }}>
                 🚄 <strong>Typical Prices (One-Way):</strong>
                 <ul style={{ paddingLeft: '1.2rem', marginTop: '0.4rem', lineHeight: 1.6 }}>
-                  <li>Tokyo ↔ Kyoto: ~¥14,170 ($95 USD)</li>
-                  <li>Tokyo ↔ Shin-Osaka: ~¥14,720 ($99 USD)</li>
-                  <li>Shin-Osaka ↔ Hiroshima: ~¥10,440 ($70 USD)</li>
+                  <li>Tokyo ↔ Kyoto: ~¥14,170 (~$91 USD)</li>
+                  <li>Tokyo ↔ Shin-Osaka: ~¥14,720 (~$95 USD)</li>
+                  <li>Shin-Osaka ↔ Hiroshima: ~¥10,440 (~$67 USD)</li>
                 </ul>
               </div>
             </div>

@@ -4,12 +4,12 @@
   --font-heading: 'Outfit', sans-serif;
   --font-jp: 'Zen Kaku Gothic New', sans-serif;
 
-  /* Color Palette - Dark / Sumi Ink Theme */
-  --bg-primary: #0a0d14;
-  --bg-secondary: #121722;
-  --bg-surface: rgba(22, 29, 44, 0.75);
-  --bg-surface-hover: rgba(30, 39, 58, 0.9);
-  --bg-surface-elevated: #1a2233;
+  /* Color Palette - Dark / Midnight Sumi Ink Theme */
+  --bg-primary: #080b12;
+  --bg-secondary: #0f1422;
+  --bg-surface: rgba(18, 24, 38, 0.72);
+  --bg-surface-hover: rgba(25, 33, 52, 0.88);
+  --bg-surface-elevated: #151c2e;
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-active: rgba(230, 57, 70, 0.55);
   
@@ -21,26 +21,28 @@
   --accent-crimson: #e63946;
   --accent-crimson-glow: rgba(230, 57, 70, 0.35);
   --accent-sakura: #ffb7c5;
+  --accent-sakura-rose: #ff4d6d;
   --accent-gold: #f4a261;
   --accent-gold-glow: rgba(244, 162, 97, 0.3);
   --accent-matcha: #2a9d8f;
   --accent-indigo: #3a86ff;
+  --accent-cyan: #00b4d8;
   --accent-violet: #9d4edd;
 
   /* Glassmorphism */
-  --glass-blur: blur(16px);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-blur: blur(20px);
+  --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
   --card-radius: 20px;
   --btn-radius: 12px;
 
   --shinkansen-blue: #0077b6;
-  --shinkansen-glow: rgba(0, 119, 182, 0.4);
+  --shinkansen-glow: rgba(0, 180, 216, 0.35);
 }
 
 [data-theme='light'] {
-  --bg-primary: #f8f9fa;
-  --bg-secondary: #f0f2f5;
-  --bg-surface: rgba(255, 255, 255, 0.85);
+  --bg-primary: #f6f8fb;
+  --bg-secondary: #edf0f5;
+  --bg-surface: rgba(255, 255, 255, 0.88);
   --bg-surface-hover: rgba(255, 255, 255, 0.98);
   --bg-surface-elevated: #ffffff;
   --border-subtle: rgba(0, 0, 0, 0.08);
@@ -49,7 +51,7 @@
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --glass-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 10px 32px rgba(0, 0, 0, 0.07);
 }
 
 /* Global Reset & Base */
@@ -68,14 +70,14 @@ body {
   font-family: var(--font-main);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.65;
+  line-height: 1.68;
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle background Japanese Seigaiha / wave gradient */
+/* Layered Japanese Atmosphere: Tokyo Midnight Indigo + Sakura Crimson Glow + Seigaiha Waves */
 body::before {
   content: '';
   position: fixed;
@@ -83,12 +85,24 @@ body::before {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: 
-    radial-gradient(circle at 15% 20%, rgba(230, 57, 70, 0.07) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(58, 134, 255, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(244, 162, 97, 0.04) 0%, transparent 60%);
+  background-image:
+    /* Traditional Japanese Seigaiha Wave Pattern */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='35' viewBox='0 0 70 35'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' stroke-opacity='0.035'%3E%3Cpath d='M0 35c0-19.33 15.67-35 35-35s35 15.67 35 35'/%3E%3Cpath d='M0 28c0-15.46 12.54-28 28-28s28 12.54 28 28'/%3E%3Cpath d='M0 21c0-11.6 9.4-21 21-21s21 9.4 21 21'/%3E%3Cpath d='M0 14c0-7.73 6.27-14 14-14s14 6.27 14 14'/%3E%3Cpath d='M0 7c0-3.87 3.13-7 7-7s7 3.13 7 7'/%3E%3C/g%3E%3C/svg%3E"),
+    /* Layered atmospheric glows */
+    radial-gradient(circle at 10% 15%, rgba(230, 57, 70, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 90% 75%, rgba(0, 180, 216, 0.07) 0%, transparent 50%),
+    radial-gradient(circle at 75% 25%, rgba(58, 134, 255, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 35% 85%, rgba(244, 162, 97, 0.05) 0%, transparent 55%);
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   pointer-events: none;
   z-index: 0;
+}
+
+[data-theme='light'] body::before {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='35' viewBox='0 0 70 35'%3E%3Cg fill='none' stroke='%23000000' stroke-width='1' stroke-opacity='0.03'%3E%3Cpath d='M0 35c0-19.33 15.67-35 35-35s35 15.67 35 35'/%3E%3Cpath d='M0 28c0-15.46 12.54-28 28-28s28 12.54 28 28'/%3E%3Cpath d='M0 21c0-11.6 9.4-21 21-21s21 9.4 21 21'/%3E%3Cpath d='M0 14c0-7.73 6.27-14 14-14s14 6.27 14 14'/%3E%3Cpath d='M0 7c0-3.87 3.13-7 7-7s7 3.13 7 7'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(circle at 15% 15%, rgba(230, 57, 70, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(58, 134, 255, 0.04) 0%, transparent 50%);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -132,7 +146,7 @@ button {
 
 .interactive-hover:hover {
   border-color: var(--border-active);
-  box-shadow: 0 12px 30px rgba(230, 57, 70, 0.15);
+  box-shadow: 0 14px 34px rgba(230, 57, 70, 0.16);
 }
 
 /* Buttons */
@@ -214,6 +228,12 @@ button {
   border: 1px solid rgba(58, 134, 255, 0.3);
 }
 
+.badge-cyan {
+  background: rgba(0, 180, 216, 0.15);
+  color: #00b4d8;
+  border: 1px solid rgba(0, 180, 216, 0.3);
+}
+
 /* Custom Precision Range Slider */
 .custom-range-slider {
   -webkit-appearance: none;
@@ -275,13 +295,63 @@ button {
   }
 }
 
+/* Vertical Timeline Tracker Layout */
+.timeline-track-container {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.timeline-track-rail {
+  position: absolute;
+  top: 15px;
+  bottom: 25px;
+  left: 14px;
+  width: 3px;
+  background: linear-gradient(to bottom, #e63946, #f4a261, #3a86ff, #2a9d8f);
+  border-radius: 9999px;
+  opacity: 0.55;
+  box-shadow: 0 0 10px rgba(230, 57, 70, 0.3);
+}
+
+.timeline-node-pin {
+  position: absolute;
+  left: -2.5rem;
+  top: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0f1422;
+  border: 3px solid var(--accent-crimson);
+  box-shadow: 0 0 14px rgba(230, 57, 70, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  z-index: 2;
+}
+
+/* Dual Currency Typography */
+.dual-currency-main {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.dual-currency-sub {
+  font-size: 0.82em;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.35rem;
+}
+
 /* Falling Sakura Petals Background Animation */
 .sakura-petal {
   position: fixed;
   background: radial-gradient(circle, #ffb7c5 0%, #ff8fab 80%);
   border-radius: 12px 1px 12px 1px;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.55;
   z-index: 1;
   animation: fall linear infinite;
 }
@@ -293,10 +363,10 @@ button {
     opacity: 0;
   }
   15% {
-    opacity: 0.7;
+    opacity: 0.65;
   }
   90% {
-    opacity: 0.7;
+    opacity: 0.65;
   }
   100% {
     top: 105%;

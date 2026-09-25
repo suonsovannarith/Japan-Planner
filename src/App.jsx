@@ -163,7 +163,16 @@ export default function App() {
           <ItineraryView
             itinerary={itinerary}
             currency={currency}
+            setCurrency={setCurrency}
             onViewCityOnMap={handleViewCityOnMap}
+            onRestartCustomizer={() => {
+              setActiveTab('planner');
+              setTimeout(() => {
+                const el = document.getElementById('planner-wizard');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
+            onOpenExport={() => setIsExportOpen(true)}
           />
         )}
 
