@@ -36,12 +36,26 @@ export default function Navbar({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: '74px',
+        minHeight: '74px',
+        height: 'auto',
+        paddingTop: '0.65rem',
+        paddingBottom: '0.65rem',
+        gap: '0.75rem',
+        flexWrap: 'nowrap',
       }}>
         {/* Brand */}
         <div 
           onClick={() => setActiveTab('planner')}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', cursor: 'pointer' }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.85rem',
+            cursor: 'pointer',
+            flexShrink: 0,
+            minWidth: 0,
+            userSelect: 'none'
+          }}
+          className="brand-container"
         >
           <div style={{
             width: '42px',
@@ -53,6 +67,7 @@ export default function Navbar({
             justifyContent: 'center',
             boxShadow: '0 4px 15px rgba(230, 57, 70, 0.4)',
             color: '#fff',
+            flexShrink: 0,
           }}>
             {/* Torii Gate SVG Icon */}
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -63,16 +78,49 @@ export default function Navbar({
               <path d="M7 11h10" />
             </svg>
           </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: '800', letterSpacing: '-0.02em' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            lineHeight: 1.15,
+            minWidth: 0,
+            padding: '2px 0',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '0.45rem',
+              lineHeight: 1.2,
+              whiteSpace: 'nowrap',
+            }}>
+              <span style={{
+                fontSize: 'clamp(1.1rem, 3.2vw, 1.28rem)',
+                fontWeight: '800',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.2,
+                display: 'inline-block',
+              }}>
                 Komorebi <span style={{ color: 'var(--accent-crimson)' }}>Japan</span>
               </span>
-              <span className="kanji-text" style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', opacity: 0.9 }}>
+              <span className="kanji-text" style={{
+                fontSize: 'clamp(0.75rem, 2vw, 0.85rem)',
+                color: 'var(--accent-gold)',
+                opacity: 0.95,
+                lineHeight: 1,
+                display: 'inline-block',
+              }}>
                 木漏れ日
               </span>
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+            <div style={{
+              fontSize: 'clamp(0.62rem, 1.8vw, 0.72rem)',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.05em',
+              fontWeight: '600',
+              lineHeight: 1.25,
+              marginTop: '3px',
+              whiteSpace: 'nowrap',
+            }}>
               SMART TRIP & TRANSIT PLANNER
             </div>
           </div>
@@ -110,7 +158,7 @@ export default function Navbar({
         </div>
 
         {/* Action Controls: Currency, Theme & Share */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           {/* Currency Toggle */}
           <button
             onClick={() => setCurrency(currency === 'JPY' ? 'USD' : 'JPY')}
@@ -119,13 +167,14 @@ export default function Navbar({
               display: 'flex',
               alignItems: 'center',
               gap: '0.3rem',
-              padding: '0.45rem 0.75rem',
+              padding: '0.45rem 0.65rem',
               borderRadius: '8px',
               border: '1px solid var(--border-subtle)',
               backgroundColor: 'var(--bg-surface-elevated)',
               color: 'var(--accent-gold)',
               fontWeight: '700',
               fontSize: '0.85rem',
+              flexShrink: 0,
             }}
           >
             {currency === 'JPY' ? '¥ JPY' : '$ USD'}
@@ -144,6 +193,7 @@ export default function Navbar({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -156,13 +206,14 @@ export default function Navbar({
               display: 'flex',
               alignItems: 'center',
               gap: '0.4rem',
-              padding: '0.45rem 0.9rem',
+              padding: '0.45rem 0.85rem',
               borderRadius: '8px',
               background: 'linear-gradient(135deg, #2a9d8f, #264653)',
               color: '#fff',
               fontSize: '0.85rem',
               fontWeight: '600',
               boxShadow: '0 2px 10px rgba(42, 157, 143, 0.3)',
+              flexShrink: 0,
             }}
           >
             <Share2 size={16} />
@@ -179,6 +230,8 @@ export default function Navbar({
         padding: '0.5rem 1rem',
         borderTop: '1px solid var(--border-subtle)',
         backgroundColor: 'var(--bg-secondary)',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
       }} className="mobile-nav-strip">
         {navItems.map(item => {
           const Icon = item.icon;
@@ -198,6 +251,7 @@ export default function Navbar({
                 fontWeight: isActive ? '700' : '500',
                 color: isActive ? '#ffffff' : 'var(--text-secondary)',
                 backgroundColor: isActive ? 'var(--accent-crimson)' : 'transparent',
+                flexShrink: 0,
               }}
             >
               <Icon size={14} />
@@ -213,6 +267,16 @@ export default function Navbar({
             display: flex !important;
           }
           .mobile-nav-strip {
+            display: none !important;
+          }
+        }
+        @media (max-width: 520px) {
+          .export-btn-text {
+            display: none !important;
+          }
+        }
+        @media (max-width: 380px) {
+          .kanji-text {
             display: none !important;
           }
         }

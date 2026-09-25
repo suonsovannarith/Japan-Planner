@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import { MapPin, Train, Plane, Compass, Info, Sparkles, Navigation } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { 
+  MapPin, Train, Plane, Compass, Info, Navigation, 
+  ZoomIn, ZoomOut, RotateCcw, LocateFixed 
+} from 'lucide-react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { CITIES } from '../data/destinations';
 
 export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
   const [hoveredCity, setHoveredCity] = useState(null);
   const [showShinkansenLines, setShowShinkansenLines] = useState(true);
   const [showDomesticFlights, setShowDomesticFlights] = useState(true);
+  const transformComponentRef = useRef(null);
 
   // Extract cities in order from the current itinerary
   const itineraryCities = itinerary?.days ? [...new Set(itinerary.days.map(d => d.cityKey))] : ['tokyo', 'kyoto', 'osaka'];
@@ -28,6 +33,22 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
 
   const activeCity = hoveredCity || (selectedCityKey ? CITIES[selectedCityKey] : null);
 
+  // Helper to focus on city coordinates
+  const handleFocusCity = (cityKey) => {
+    onSelectCity(cityKey);
+    const city = CITIES[cityKey];
+    if (city?.coordinates && transformComponentRef.current) {
+      // Smoothly zoom in to the city coordinate
+      const { setTransform } = transformComponentRef.current;
+      // Calculate offset based on viewBox: 180, 100 to 820, 600
+      const targetScale = 1.8;
+      // Approximate center offset
+      const cx = (city.coordinates.x - 500) * -1.2;
+      const cy = (city.coordinates.y - 350) * -1.2;
+      setTransform(cx, cy, targetScale, 400, 'easeOut');
+    }
+  };
+
   return (
     <section id="map-section" style={{ padding: '2rem 0 4rem 0' }}>
       <div className="container">
@@ -39,14 +60,14 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
           alignItems: 'flex-end',
           flexWrap: 'wrap',
           gap: '1rem',
-          marginBottom: '1.5rem',
+          marginBottom: '1.25rem',
         }}>
           <div>
             <div className="badge badge-crimson" style={{ marginBottom: '0.4rem' }}>
               Interactive Visual Geography
             </div>
             <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', marginBottom: '0.2rem' }}>
-              Japan Transit & Route Map
+              Japan Transit &amp; Route Map
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               High-speed Shinkansen corridors, domestic flight hops, and your itinerary's travel trajectory.
@@ -68,7 +89,8 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
                 border: '1px solid',
                 borderColor: showShinkansenLines ? '#00b4d8' : 'var(--border-subtle)',
                 backgroundColor: showShinkansenLines ? 'rgba(0, 180, 216, 0.15)' : 'var(--bg-surface-elevated)',
-                color: showShinkansenLines ? '#38bdf8' : 'var(--text-secondary)',
+                color: showShinkansenLines ? 'var(--accent-indigo)' : 'var(--text-secondary)',
+                transition: 'all 0.2s ease',
               }}
             >
               <Train size={14} />
@@ -89,6 +111,7 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
                 borderColor: showDomesticFlights ? 'var(--accent-gold)' : 'var(--border-subtle)',
                 backgroundColor: showDomesticFlights ? 'rgba(244, 162, 97, 0.15)' : 'var(--bg-surface-elevated)',
                 color: showDomesticFlights ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                transition: 'all 0.2s ease',
               }}
             >
               <Plane size={14} />
@@ -97,238 +120,458 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
           </div>
         </div>
 
-        {/* Map Container */}
+        {/* Quick Destination Navigation Pills */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+          overflowX: 'auto',
+          paddingBottom: '0.65rem',
+          marginBottom: '1rem',
+          scrollbarWidth: 'none',
+        }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}>
+            <MapPin size={14} /> Jump to City:
+          </span>
+          {Object.values(CITIES).map(city => {
+            const isSelected = selectedCityKey === city.id;
+            const inTrip = itineraryCities.includes(city.id);
+            return (
+              <button
+                key={city.id}
+                onClick={() => handleFocusCity(city.id)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.3rem 0.75rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.78rem',
+                  fontWeight: isSelected ? '700' : '500',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: isSelected 
+                    ? 'var(--accent-crimson)' 
+                    : inTrip 
+                    ? 'rgba(230, 57, 70, 0.12)' 
+                    : 'var(--bg-surface-elevated)',
+                  color: isSelected ? '#ffffff' : inTrip ? 'var(--accent-crimson)' : 'var(--text-secondary)',
+                  border: '1px solid',
+                  borderColor: isSelected ? 'var(--accent-crimson)' : inTrip ? 'rgba(230, 57, 70, 0.3)' : 'var(--border-subtle)',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <span>{city.name}</span>
+                <span className="kanji-text" style={{ fontSize: '0.72rem', opacity: 0.85 }}>{city.kanji}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Map Layout Grid */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'minmax(0, 1fr) clamp(280px, 30vw, 360px)',
           gap: '1.5rem',
         }} className="map-grid-layout">
           
-          {/* Interactive SVG Canvas */}
+          {/* Interactive Pan-and-Zoom Map Container */}
           <div className="glass-card" style={{
             position: 'relative',
-            padding: '1rem',
+            padding: 0,
             overflow: 'hidden',
             minHeight: '520px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#070a10',
+            backgroundColor: 'var(--map-bg)',
             border: '1px solid var(--border-subtle)',
+            borderRadius: '20px',
+            boxShadow: 'var(--glass-shadow)',
           }}>
             
-            {/* Compass Rose Accent */}
+            {/* Top Bar: Compass Rose Title */}
             <div style={{
               position: 'absolute',
-              top: '20px',
-              left: '20px',
+              top: '16px',
+              left: '16px',
+              zIndex: 10,
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              color: 'var(--text-muted)',
+              backgroundColor: 'var(--map-legend-bg)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              padding: '0.4rem 0.8rem',
+              borderRadius: '10px',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--map-text-color)',
               fontSize: '0.78rem',
-              fontWeight: '600',
+              fontWeight: '700',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}>
-              <Compass size={18} style={{ color: 'var(--accent-crimson)' }} />
-              <span>NIPPON RAIL MAP 2026</span>
+              <Compass size={17} style={{ color: 'var(--accent-crimson)' }} />
+              <span>NIPPON TRANSIT CARTOGRAPHY</span>
             </div>
 
-            {/* SVG Graphics */}
-            <svg 
-              viewBox="180 100 640 500" 
-              style={{ width: '100%', height: '100%', maxHeight: '550px' }}
+            {/* Transform Pan & Zoom Interactive Area */}
+            <TransformWrapper
+              ref={transformComponentRef}
+              initialScale={1}
+              minScale={0.75}
+              maxScale={4.5}
+              centerOnInit={true}
+              wheel={{ step: 0.12 }}
+              pinch={{ step: 5 }}
+              panning={{ velocityDisabled: true }}
+              doubleClick={{ mode: 'zoomIn', step: 0.5 }}
             >
-              <defs>
-                <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ff4d6d" />
-                  <stop offset="50%" stopColor="#e63946" />
-                  <stop offset="100%" stopColor="#f4a261" />
-                </linearGradient>
-
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              {/* Japan Landmass Silhouette (Stylized Archipelago Paths) */}
-              <g fill="#161e2e" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.5">
-                {/* Hokkaido */}
-                <path d="M 680 120 C 720 100, 780 120, 800 150 C 790 190, 750 200, 710 190 C 690 170, 660 150, 680 120 Z" />
-                
-                {/* Honshu (Main Island Curve) */}
-                <path d="M 710 220 C 720 280, 690 350, 670 410 C 660 460, 610 470, 560 440 C 530 450, 480 470, 420 480 C 370 490, 340 510, 360 520 C 440 500, 520 490, 570 430 C 620 380, 670 330, 690 260 Z" />
-                
-                {/* Shikoku */}
-                <path d="M 430 510 C 470 500, 490 520, 460 540 C 420 540, 400 520, 430 510 Z" />
-                
-                {/* Kyushu */}
-                <path d="M 280 520 C 310 510, 320 540, 300 580 C 270 590, 250 560, 260 530 Z" />
-              </g>
-
-              {/* Shinkansen Rail Corridors */}
-              {showShinkansenLines && shinkansenLines.map(line => (
-                <g key={line.id}>
-                  <path
-                    d={line.path}
-                    fill="none"
-                    stroke={line.color}
-                    strokeWidth="3.5"
-                    strokeOpacity="0.4"
-                  />
-                  <path
-                    d={line.path}
-                    fill="none"
-                    stroke={line.color}
-                    strokeWidth="2"
-                    strokeDasharray="6 4"
-                    filter="url(#glow)"
-                  >
-                    <animate attributeName="stroke-dashoffset" from="40" to="0" dur="2s" repeatCount="indefinite" />
-                  </path>
-                </g>
-              ))}
-
-              {/* Domestic Flight Arcs (e.g., Tokyo to Sapporo, Fukuoka to Tokyo) */}
-              {showDomesticFlights && (
-                <g stroke="#f4a261" strokeWidth="1.5" strokeDasharray="4 6" fill="none" opacity="0.6">
-                  {/* Tokyo to Sapporo Flight Arc */}
-                  <path d="M 670 440 Q 730 290 740 160" />
-                  {/* Fukuoka to Tokyo Flight Arc */}
-                  <path d="M 260 550 Q 450 420 670 440" />
-                </g>
-              )}
-
-              {/* Itinerary Route Trajectory */}
-              {routePathD && (
-                <path
-                  d={routePathD}
-                  fill="none"
-                  stroke="url(#routeGradient)"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  filter="url(#glow)"
-                />
-              )}
-
-              {/* City Nodes */}
-              {Object.values(CITIES).map(city => {
-                const { x, y } = city.coordinates;
-                const isInItinerary = itineraryCities.includes(city.id);
-                const isSelected = selectedCityKey === city.id || hoveredCity?.id === city.id;
-                const itineraryDayIndex = itinerary?.days ? itinerary.days.findIndex(d => d.cityKey === city.id) : -1;
-
-                return (
-                  <g
-                    key={city.id}
-                    onClick={() => onSelectCity(city.id)}
-                    onMouseEnter={() => setHoveredCity(city)}
-                    onMouseLeave={() => setHoveredCity(null)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {/* Outer Pulse ring if in active itinerary */}
-                    {isInItinerary && (
-                      <circle cx={x} cy={y} r={isSelected ? 16 : 10} fill="rgba(230, 57, 70, 0.25)">
-                        <animate attributeName="r" values="8;16;8" dur="2.5s" repeatCount="indefinite" />
-                        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.5s" repeatCount="indefinite" />
-                      </circle>
-                    )}
-
-                    {/* Main Dot */}
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={isSelected ? 7 : isInItinerary ? 5.5 : 4}
-                      fill={isInItinerary ? '#e63946' : '#64748b'}
-                      stroke="#ffffff"
-                      strokeWidth={isSelected ? 2.5 : 1.5}
-                    />
-
-                    {/* City Label */}
-                    <text
-                      x={x + 9}
-                      y={y + 4}
-                      fill={isInItinerary ? '#f8fafc' : '#94a3b8'}
-                      fontSize={isSelected ? '12px' : '10px'}
-                      fontWeight={isInItinerary ? '700' : '500'}
-                      fontFamily="var(--font-heading)"
-                      filter="drop-shadow(0px 2px 4px rgba(0,0,0,0.8))"
+              {({ zoomIn, zoomOut, resetTransform, instance }) => (
+                <div style={{ width: '100%', height: '100%', minHeight: '520px', position: 'relative' }}>
+                  
+                  {/* Floating Zoom Toolbar Controls */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '16px',
+                    right: '16px',
+                    zIndex: 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    backgroundColor: 'var(--map-legend-bg)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '12px',
+                    padding: '0.35rem',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+                  }}>
+                    <button
+                      onClick={() => zoomIn(0.35)}
+                      title="Zoom In (+)"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'var(--bg-surface-elevated)',
+                        color: 'var(--map-text-color)',
+                        border: '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
                     >
-                      {city.name}
-                    </text>
+                      <ZoomIn size={16} />
+                    </button>
 
-                    {/* Badge indicator for Day # or START if starting gateway */}
-                    {itineraryDayIndex === 0 ? (
-                      <g>
-                        <rect
-                          x={x - 24}
-                          y={y - 20}
-                          width="32"
-                          height="15"
-                          rx="4"
-                          fill="var(--accent-gold)"
-                        />
-                        <text
-                          x={x - 8}
-                          y={y - 9}
-                          textAnchor="middle"
-                          fill="#0f172a"
-                          fontSize="8.5px"
-                          fontWeight="900"
-                          fontFamily="var(--font-heading)"
-                        >
-                          START
-                        </text>
-                      </g>
-                    ) : itineraryDayIndex > 0 ? (
-                      <g>
-                        <rect
-                          x={x - 20}
-                          y={y - 18}
-                          width="18"
-                          height="14"
-                          rx="4"
-                          fill="#e63946"
-                        />
-                        <text
-                          x={x - 11}
-                          y={y - 8}
-                          textAnchor="middle"
-                          fill="#ffffff"
-                          fontSize="9px"
-                          fontWeight="800"
-                          fontFamily="var(--font-heading)"
-                        >
-                          {itineraryDayIndex + 1}
-                        </text>
-                      </g>
-                    ) : null}
-                  </g>
-                );
-              })}
-            </svg>
+                    <button
+                      onClick={() => zoomOut(0.35)}
+                      title="Zoom Out (-)"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'var(--bg-surface-elevated)',
+                        color: 'var(--map-text-color)',
+                        border: '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <ZoomOut size={16} />
+                    </button>
 
-            {/* Map Legend */}
+                    <button
+                      onClick={() => resetTransform(300, 'easeOut')}
+                      title="Reset View"
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'var(--bg-surface-elevated)',
+                        color: 'var(--map-text-color)',
+                        border: '1px solid var(--border-subtle)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <RotateCcw size={15} />
+                    </button>
+
+                    <div style={{
+                      fontSize: '0.75rem',
+                      fontWeight: '800',
+                      color: 'var(--accent-gold)',
+                      padding: '0 0.5rem',
+                      borderLeft: '1px solid var(--border-subtle)',
+                      minWidth: '46px',
+                      textAlign: 'center',
+                    }}>
+                      {Math.round((instance?.transformState?.scale || 1) * 100)}%
+                    </div>
+                  </div>
+
+                  {/* Interactive Map Transform Canvas */}
+                  <TransformComponent
+                    wrapperStyle={{
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '520px',
+                      cursor: 'grab',
+                    }}
+                    contentStyle={{
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '520px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <svg 
+                      viewBox="180 100 640 500" 
+                      style={{ width: '100%', height: '100%', minHeight: '520px', userSelect: 'none' }}
+                    >
+                      <defs>
+                        <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ff4d6d" />
+                          <stop offset="50%" stopColor="#e63946" />
+                          <stop offset="100%" stopColor="#f4a261" />
+                        </linearGradient>
+
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="3" result="blur" />
+                          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                      </defs>
+
+                      {/* Subtle Latitude / Longitude Cartographic Grid */}
+                      <g stroke="var(--map-sea-grid)" strokeWidth="1" strokeDasharray="4 6">
+                        <line x1="180" y1="200" x2="820" y2="200" />
+                        <line x1="180" y1="300" x2="820" y2="300" />
+                        <line x1="180" y1="400" x2="820" y2="400" />
+                        <line x1="180" y1="500" x2="820" y2="500" />
+                        <line x1="300" y1="100" x2="300" y2="600" />
+                        <line x1="450" y1="100" x2="450" y2="600" />
+                        <line x1="600" y1="100" x2="600" y2="600" />
+                        <line x1="750" y1="100" x2="750" y2="600" />
+                      </g>
+
+                      {/* Japan Landmass Silhouette (Archipelago Shapes) */}
+                      <g fill="var(--map-land-fill)" stroke="var(--map-land-stroke)" strokeWidth="1.6" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.15))">
+                        {/* Hokkaido */}
+                        <path d="M 680 120 C 720 100, 780 120, 800 150 C 790 190, 750 200, 710 190 C 690 170, 660 150, 680 120 Z" />
+                        
+                        {/* Honshu (Main Island Curve) */}
+                        <path d="M 710 220 C 720 280, 690 350, 670 410 C 660 460, 610 470, 560 440 C 530 450, 480 470, 420 480 C 370 490, 340 510, 360 520 C 440 500, 520 490, 570 430 C 620 380, 670 330, 690 260 Z" />
+                        
+                        {/* Shikoku */}
+                        <path d="M 430 510 C 470 500, 490 520, 460 540 C 420 540, 400 520, 430 510 Z" />
+                        
+                        {/* Kyushu */}
+                        <path d="M 280 520 C 310 510, 320 540, 300 580 C 270 590, 250 560, 260 530 Z" />
+                      </g>
+
+                      {/* Shinkansen Rail Corridors */}
+                      {showShinkansenLines && shinkansenLines.map(line => (
+                        <g key={line.id}>
+                          <path
+                            d={line.path}
+                            fill="none"
+                            stroke={line.color}
+                            strokeWidth="3.5"
+                            strokeOpacity="0.45"
+                          />
+                          <path
+                            d={line.path}
+                            fill="none"
+                            stroke={line.color}
+                            strokeWidth="2"
+                            strokeDasharray="6 4"
+                            filter="url(#glow)"
+                          >
+                            <animate attributeName="stroke-dashoffset" from="40" to="0" dur="2s" repeatCount="indefinite" />
+                          </path>
+                        </g>
+                      ))}
+
+                      {/* Domestic Flight Arcs */}
+                      {showDomesticFlights && (
+                        <g stroke="#f4a261" strokeWidth="1.5" strokeDasharray="4 6" fill="none" opacity="0.65">
+                          {/* Tokyo to Sapporo Flight Arc */}
+                          <path d="M 670 440 Q 730 290 740 160" />
+                          {/* Fukuoka to Tokyo Flight Arc */}
+                          <path d="M 260 550 Q 450 420 670 440" />
+                        </g>
+                      )}
+
+                      {/* Itinerary Route Trajectory */}
+                      {routePathD && (
+                        <path
+                          d={routePathD}
+                          fill="none"
+                          stroke="url(#routeGradient)"
+                          strokeWidth="3.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          filter="url(#glow)"
+                        />
+                      )}
+
+                      {/* City Nodes */}
+                      {Object.values(CITIES).map(city => {
+                        const { x, y } = city.coordinates;
+                        const isInItinerary = itineraryCities.includes(city.id);
+                        const isSelected = selectedCityKey === city.id || hoveredCity?.id === city.id;
+                        const itineraryDayIndex = itinerary?.days ? itinerary.days.findIndex(d => d.cityKey === city.id) : -1;
+
+                        return (
+                          <g
+                            key={city.id}
+                            onClick={() => onSelectCity(city.id)}
+                            onMouseEnter={() => setHoveredCity(city)}
+                            onMouseLeave={() => setHoveredCity(null)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {/* Outer Pulse ring if in active itinerary */}
+                            {isInItinerary && (
+                              <circle cx={x} cy={y} r={isSelected ? 16 : 10} fill="rgba(230, 57, 70, 0.25)">
+                                <animate attributeName="r" values="8;16;8" dur="2.5s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.5s" repeatCount="indefinite" />
+                              </circle>
+                            )}
+
+                            {/* Main Dot */}
+                            <circle
+                              cx={x}
+                              cy={y}
+                              r={isSelected ? 7 : isInItinerary ? 5.5 : 4}
+                              fill={isInItinerary ? '#e63946' : '#64748b'}
+                              stroke="#ffffff"
+                              strokeWidth={isSelected ? 2.5 : 1.5}
+                            />
+
+                            {/* City Label with high contrast text stroke */}
+                            <text
+                              x={x + 9}
+                              y={y + 4}
+                              fill="var(--map-text-color)"
+                              stroke="var(--map-bg)"
+                              strokeWidth="3.5"
+                              strokeLinejoin="round"
+                              paintOrder="stroke fill"
+                              fontSize={isSelected ? '12px' : '10px'}
+                              fontWeight={isInItinerary ? '800' : '600'}
+                              fontFamily="var(--font-heading)"
+                            >
+                              {city.name}
+                            </text>
+
+                            {/* Badge indicator for Day # or START if starting gateway */}
+                            {itineraryDayIndex === 0 ? (
+                              <g>
+                                <rect
+                                  x={x - 24}
+                                  y={y - 20}
+                                  width="32"
+                                  height="15"
+                                  rx="4"
+                                  fill="var(--accent-gold)"
+                                />
+                                <text
+                                  x={x - 8}
+                                  y={y - 9}
+                                  textAnchor="middle"
+                                  fill="#0f172a"
+                                  fontSize="8.5px"
+                                  fontWeight="900"
+                                  fontFamily="var(--font-heading)"
+                                >
+                                  START
+                                </text>
+                              </g>
+                            ) : itineraryDayIndex > 0 ? (
+                              <g>
+                                <rect
+                                  x={x - 20}
+                                  y={y - 18}
+                                  width="18"
+                                  height="14"
+                                  rx="4"
+                                  fill="#e63946"
+                                />
+                                <text
+                                  x={x - 11}
+                                  y={y - 8}
+                                  textAnchor="middle"
+                                  fill="#ffffff"
+                                  fontSize="9px"
+                                  fontWeight="800"
+                                  fontFamily="var(--font-heading)"
+                                >
+                                  {itineraryDayIndex + 1}
+                                </text>
+                              </g>
+                            ) : null}
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </TransformComponent>
+
+                  {/* Floating Drag & Pinch Hint */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '14px',
+                    right: '14px',
+                    zIndex: 10,
+                    backgroundColor: 'var(--map-legend-bg)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '8px',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.72rem',
+                    color: 'var(--map-text-secondary)',
+                    fontWeight: '600',
+                    pointerEvents: 'none',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  }}>
+                    🔍 Drag to Pan • Scroll or Pinch to Zoom
+                  </div>
+
+                </div>
+              )}
+            </TransformWrapper>
+
+            {/* Map Legend Overlay */}
             <div style={{
               position: 'absolute',
-              bottom: '15px',
-              left: '15px',
-              background: 'rgba(10, 13, 20, 0.85)',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '8px',
+              bottom: '14px',
+              left: '14px',
+              zIndex: 10,
+              backgroundColor: 'var(--map-legend-bg)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              padding: '0.55rem 0.85rem',
+              borderRadius: '10px',
               border: '1px solid var(--border-subtle)',
               fontSize: '0.75rem',
+              color: 'var(--map-text-color)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.3rem',
+              gap: '0.35rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#e63946' }}></span>
                 <span>In Itinerary</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ width: '14px', height: '2px', backgroundColor: '#00b4d8' }}></span>
+                <span style={{ width: '14px', height: '2.5px', backgroundColor: '#00b4d8', borderRadius: '2px' }}></span>
                 <span>Shinkansen Bullet Line</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -372,6 +615,30 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
                   {activeCity.tagline}
                 </p>
 
+                {/* Focus on City Button */}
+                <button
+                  onClick={() => handleFocusCity(activeCity.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    fontSize: '0.82rem',
+                    fontWeight: '700',
+                    backgroundColor: 'var(--bg-surface-elevated)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--accent-crimson)',
+                    marginBottom: '1.25rem',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <LocateFixed size={14} />
+                  <span>Center &amp; Zoom on {activeCity.name}</span>
+                </button>
+
                 {/* Top Highlights Preview */}
                 <div style={{ marginBottom: '1.25rem' }}>
                   <div style={{ fontSize: '0.78rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '0.5rem' }}>
@@ -403,7 +670,7 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
                 }}>
                   <div style={{ color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Avg. Hotel / Night:</div>
                   <div style={{ fontWeight: '700', color: 'var(--accent-gold)' }}>
-                    ¥{activeCity.avgHotelPerNight.mid.toLocaleString()} (~$100 USD)
+                    ¥{activeCity.avgHotelPerNight.mid.toLocaleString()} (~$116 USD)
                   </div>
                 </div>
               </div>

@@ -113,7 +113,7 @@ export default function TripPrep() {
         {/* Categorized Checklist Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
           gap: '1.75rem',
         }}>
           {sections.map(sec => {

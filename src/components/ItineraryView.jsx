@@ -97,8 +97,8 @@ export default function ItineraryView({
           marginBottom: '2.5rem',
           border: '1px solid var(--border-subtle)',
           borderRadius: '24px',
-          background: 'linear-gradient(135deg, rgba(18, 24, 38, 0.95), rgba(25, 33, 52, 0.8))',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.4)',
+          background: 'var(--card-hero-bg)',
+          boxShadow: 'var(--glass-shadow)',
         }}>
           {/* Top Tag & Route Flow */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -167,7 +167,7 @@ export default function ItineraryView({
           {/* Summary Financial & Logistics Pills */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
             gap: '1rem',
             padding: '1.25rem',
             borderRadius: '16px',
@@ -246,7 +246,7 @@ export default function ItineraryView({
               {/* Comparison Stats Row */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))',
                 gap: '1rem',
                 marginBottom: '1rem',
               }}>
@@ -506,8 +506,8 @@ export default function ItineraryView({
                         padding: '1.25rem 1.5rem',
                         borderRadius: '16px',
                         border: '1px solid rgba(0, 180, 216, 0.45)',
-                        background: 'linear-gradient(135deg, rgba(0, 119, 182, 0.18), rgba(18, 24, 38, 0.95))',
-                        boxShadow: '0 8px 30px rgba(0, 119, 182, 0.25)',
+                        background: 'var(--card-transit-bg)',
+                        boxShadow: '0 8px 30px rgba(0, 119, 182, 0.2)',
                       }}>
                         <div style={{
                           display: 'flex',
@@ -591,7 +591,7 @@ export default function ItineraryView({
                       <div style={{
                         padding: '1.5rem',
                         borderBottom: '1px solid var(--border-subtle)',
-                        background: 'linear-gradient(to right, rgba(22, 29, 44, 0.95), rgba(30, 39, 58, 0.7))',
+                        background: 'var(--card-header-bg)',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',

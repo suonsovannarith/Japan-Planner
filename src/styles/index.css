@@ -42,40 +42,66 @@
 
   --shinkansen-blue: #0077b6;
   --shinkansen-glow: rgba(0, 180, 216, 0.4);
+
+  /* Theme-Aware Surfaces & Cartography (Dark Defaults) */
+  --card-header-bg: linear-gradient(to right, rgba(22, 29, 44, 0.95), rgba(30, 39, 58, 0.7));
+  --card-hero-bg: linear-gradient(135deg, rgba(18, 24, 38, 0.95), rgba(25, 33, 52, 0.8));
+  --card-transit-bg: linear-gradient(135deg, rgba(0, 119, 182, 0.18), rgba(18, 24, 38, 0.95));
+  --card-secret-bg: linear-gradient(135deg, rgba(42, 157, 143, 0.08), rgba(15, 20, 34, 0.8));
+  --map-bg: #070a10;
+  --map-land-fill: #161e2e;
+  --map-land-stroke: rgba(255, 255, 255, 0.14);
+  --map-sea-grid: rgba(255, 255, 255, 0.04);
+  --map-legend-bg: rgba(10, 13, 20, 0.88);
+  --map-text-color: #f8fafc;
+  --map-text-secondary: #94a3b8;
 }
 
 [data-theme='light'] {
-  /* Crisp, High-Contrast Light Mode (Off-White Warm Paper Tone) */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
-  --bg-surface: rgba(255, 255, 255, 0.95);
-  --bg-surface-hover: #ffffff;
-  --bg-surface-elevated: #ffffff;
+  /* Crisp, High-Contrast Pure White & Airy Warm Atmosphere */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-surface: rgba(255, 255, 255, 0.96);
+  --bg-surface-hover: #f1f5f9;
+  --bg-surface-elevated: #f8fafc;
   --border-subtle: #e2e8f0;
   --border-active: #e63946;
   
   --text-primary: #0f172a;       /* Deep slate-900 */
-  --text-secondary: #334155;     /* Slate-700, crisp high-contrast */
+  --text-secondary: #334155;     /* Slate-700 */
   --text-muted: #64748b;         /* Slate-500 */
 
   /* High-Contrast WCAG-AA Accents for Light Mode */
   --accent-crimson: #d90429;
-  --accent-crimson-glow: rgba(217, 4, 41, 0.25);
-  --accent-sakura: #be123c;
+  --accent-crimson-glow: rgba(217, 4, 41, 0.2);
+  --accent-sakura: #e11d48;
   --accent-sakura-rose: #be123c;
-  --accent-gold: #b45309;        /* Rich Amber-700 (High contrast on white) */
-  --accent-gold-glow: rgba(180, 83, 9, 0.2);
+  --accent-gold: #b45309;        /* Rich Amber-700 */
+  --accent-gold-glow: rgba(180, 83, 9, 0.15);
   --accent-matcha: #0f766e;      /* Teal-700 */
   --accent-indigo: #1d4ed8;      /* Blue-700 */
   --accent-cyan: #0284c7;        /* Sky-700 */
   --accent-violet: #6d28d9;      /* Purple-700 */
 
   /* Tip & Warning Box Styles (Light) */
-  --tip-bg: #fef3c7;
+  --tip-bg: #fffbeb;
   --tip-border: #fcd34d;
   --tip-text: #92400e;
 
-  --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+
+  /* Theme-Aware Surfaces & Cartography (Light Overrides) */
+  --card-header-bg: linear-gradient(to right, #f8fafc, #ffffff);
+  --card-hero-bg: linear-gradient(135deg, #ffffff, #f8fafc);
+  --card-transit-bg: linear-gradient(135deg, rgba(224, 242, 254, 0.7), rgba(255, 255, 255, 0.95));
+  --card-secret-bg: linear-gradient(135deg, rgba(204, 251, 241, 0.35), rgba(255, 255, 255, 0.95));
+  --map-bg: #f1f5f9;
+  --map-land-fill: #ffffff;
+  --map-land-stroke: #cbd5e1;
+  --map-sea-grid: rgba(15, 23, 42, 0.04);
+  --map-legend-bg: rgba(255, 255, 255, 0.95);
+  --map-text-color: #0f172a;
+  --map-text-secondary: #475569;
 }
 
 /* Global Reset & Base */
@@ -88,6 +114,8 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -97,6 +125,7 @@ body {
   line-height: 1.68;
   min-height: 100vh;
   overflow-x: hidden;
+  max-width: 100vw;
   position: relative;
   -webkit-font-smoothing: antialiased;
 }
@@ -124,11 +153,18 @@ body::before {
 }
 
 [data-theme='light'] body::before {
+  background-color: #ffffff;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='35' viewBox='0 0 70 35'%3E%3Cg fill='none' stroke='%230f172a' stroke-width='1.2' stroke-opacity='0.05'%3E%3Cpath d='M0 35c0-19.33 15.67-35 35-35s35 15.67 35 35'/%3E%3Cpath d='M0 28c0-15.46 12.54-28 28-28s28 12.54 28 28'/%3E%3Cpath d='M0 21c0-11.6 9.4-21 21-21s21 9.4 21 21'/%3E%3Cpath d='M0 14c0-7.73 6.27-14 14-14s14 6.27 14 14'/%3E%3Cpath d='M0 7c0-3.87 3.13-7 7-7s7 3.13 7 7'/%3E%3C/g%3E%3C/svg%3E"),
-    radial-gradient(circle at 12% 15%, rgba(225, 29, 72, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 88% 85%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(248, 250, 252, 0.8) 0%, transparent 70%);
+    /* Traditional Japanese Seigaiha Pattern, very faint 3.5% opacity for elegant texture */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='70' height='35' viewBox='0 0 70 35'%3E%3Cg fill='none' stroke='%230f172a' stroke-width='1.1' stroke-opacity='0.035'%3E%3Cpath d='M0 35c0-19.33 15.67-35 35-35s35 15.67 35 35'/%3E%3Cpath d='M0 28c0-15.46 12.54-28 28-28s28 12.54 28 28'/%3E%3Cpath d='M0 21c0-11.6 9.4-21 21-21s21 9.4 21 21'/%3E%3Cpath d='M0 14c0-7.73 6.27-14 14-14s14 6.27 14 14'/%3E%3Cpath d='M0 7c0-3.87 3.13-7 7-7s7 3.13 7 7'/%3E%3C/g%3E%3C/svg%3E"),
+    /* Soft warm ambient sakura blossom tint in top-left */
+    radial-gradient(circle at 10% 8%, rgba(255, 183, 197, 0.18) 0%, transparent 45%),
+    /* Soft sunny morning glow in top-right */
+    radial-gradient(circle at 90% 8%, rgba(254, 215, 170, 0.16) 0%, transparent 45%),
+    /* Pristine clean off-white base without gloomy dark corners */
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  opacity: 1;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -377,43 +413,100 @@ button {
   margin-left: 0.35rem;
 }
 
-/* Falling Sakura Petals Background Animation */
-.sakura-petal {
+/* Sakura Branch & Petals Ambient Aesthetics */
+@keyframes branchSwayLeft {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1.8deg) translateY(4px);
+  }
+}
+
+/* Continuous wind sway keyframes for image_fd1a88.jpg (8s cycle between -2deg and 2deg) */
+@keyframes windSwayTopRight {
+  0%, 100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+.sakura-branch-left {
   position: fixed;
-  background: radial-gradient(circle, #ffb7c5 0%, #ff8fab 80%);
-  border-radius: 12px 1px 12px 1px;
+  top: 0;
+  left: 0;
   pointer-events: none;
-  opacity: 0.55;
   z-index: 1;
-  animation: fall linear infinite;
+  transform-origin: top left;
+  animation: branchSwayLeft 7.5s ease-in-out infinite;
+  transition: opacity 0.4s ease;
 }
 
-@keyframes fall {
-  0% {
-    top: -5%;
-    transform: rotate(0deg) translateX(0);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.65;
-  }
-  90% {
-    opacity: 0.65;
-  }
-  100% {
-    top: 105%;
-    transform: rotate(360deg) translateX(80px);
-    opacity: 0;
+/* Top-right branch asset: fixed, non-interactive, anchored top-right */
+.sakura-branch-asset {
+  position: fixed;
+  top: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+  transform-origin: top right;
+  width: clamp(280px, 34vw, 500px);
+  height: auto;
+  max-width: 90vw;
+  user-select: none;
+  animation: windSwayTopRight 8s ease-in-out infinite;
+  transition: filter 0.35s ease, opacity 0.35s ease;
+  opacity: 0.96;
+}
+
+/* Light theme: natural display */
+[data-theme='light'] .sakura-branch-asset,
+.theme-light.sakura-branch-asset {
+  opacity: 0.96;
+  filter: drop-shadow(0 4px 14px rgba(244, 114, 182, 0.22));
+}
+
+/* Dark theme: crisp contrast boost & pink/white separation glow */
+[data-theme='dark'] .sakura-branch-asset,
+.theme-dark.sakura-branch-asset {
+  opacity: 1;
+  filter: brightness(1.3) contrast(1.1) drop-shadow(0 0 15px rgba(255, 182, 193, 0.4));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sakura-branch-asset,
+  .sakura-branch-left {
+    animation: none !important;
   }
 }
 
-/* Layout Utilities */
+/* Layout Utilities - True Fluid & Responsive Containers */
 .container {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 clamp(1rem, 3.5vw, 1.5rem);
   position: relative;
   z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments across mobile & tablet */
+@media (max-width: 640px) {
+  .timeline-track-container {
+    padding-left: 1.75rem !important;
+  }
+  .timeline-track-rail {
+    left: 10px !important;
+  }
+  .timeline-node-pin {
+    left: -1.75rem !important;
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 0.72rem !important;
+  }
 }
 
 /* Custom Scrollbar */

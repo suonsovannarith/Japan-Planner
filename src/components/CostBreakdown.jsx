@@ -168,7 +168,7 @@ export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
               gap: '1.25rem',
               marginBottom: '1.25rem',
             }}>
@@ -235,7 +235,7 @@ export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency
         {/* Top 3 Dual-Currency Summary Cards */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
           gap: '1.25rem',
           marginBottom: '2.5rem',
         }}>
@@ -386,7 +386,7 @@ export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency
         <div className="glass-card" style={{
           padding: '2rem',
           border: '1px solid rgba(42, 157, 143, 0.35)',
-          background: 'linear-gradient(135deg, rgba(42, 157, 143, 0.08), rgba(15, 20, 34, 0.8))',
+          background: 'var(--card-secret-bg)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
             <Sparkles size={22} style={{ color: 'var(--accent-matcha)' }} />
@@ -397,7 +397,7 @@ export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
             gap: '1.5rem',
             fontSize: '0.88rem',
             color: 'var(--text-secondary)',

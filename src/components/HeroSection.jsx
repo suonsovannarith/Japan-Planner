@@ -64,7 +64,7 @@ export default function HeroSection({ onSelectPreset, onStartPlanning }) {
           {/* Quick Preset Buttons */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))',
             gap: '0.85rem',
             marginBottom: '2.5rem',
           }}>

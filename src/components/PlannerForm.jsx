@@ -211,7 +211,7 @@ export default function PlannerForm({
         
         {/* Multi-Step Wizard Card */}
         <div className="glass-card" style={{
-          padding: 'clamp(2rem, 5vw, 3.5rem)',
+          padding: 'clamp(1.25rem, 4vw, 3rem)',
           border: '1px solid var(--border-subtle)',
           borderRadius: '24px',
           boxShadow: 'var(--glass-shadow)',
@@ -425,7 +425,7 @@ export default function PlannerForm({
                           marginBottom: '6px',
                           transition: 'all 0.2s ease',
                         }} />
-                        <span style={{
+                        <span className="tick-label-full" style={{
                           fontSize: '0.8rem',
                           fontWeight: isSelected ? '800' : '600',
                           color: isSelected ? 'var(--accent-crimson)' : 'var(--text-muted)',
@@ -433,6 +433,15 @@ export default function PlannerForm({
                           transition: 'all 0.2s ease',
                         }}>
                           {tick.fullLabel}
+                        </span>
+                        <span className="tick-label-short" style={{
+                          fontSize: '0.8rem',
+                          fontWeight: isSelected ? '800' : '600',
+                          color: isSelected ? 'var(--accent-crimson)' : 'var(--text-muted)',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.2s ease',
+                        }}>
+                          {tick.label}
                         </span>
                       </button>
                     );
@@ -447,7 +456,7 @@ export default function PlannerForm({
                 </label>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
                   gap: '0.9rem',
                 }}>
                   {presets.map((preset) => {
@@ -509,7 +518,7 @@ export default function PlannerForm({
               {/* Large Visual City Cards */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
                 gap: '1.25rem',
               }}>
                 {cities.map((city) => {
@@ -632,7 +641,7 @@ export default function PlannerForm({
               {/* Visual Vibe Cards Grid */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
                 gap: '1.1rem',
               }}>
                 {INTEREST_CATEGORIES.map((category) => {
@@ -759,7 +768,7 @@ export default function PlannerForm({
 
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
                   gap: '1rem',
                 }}>
                   {PACE_OPTIONS.map((opt) => {
@@ -852,7 +861,7 @@ export default function PlannerForm({
                 {/* Quick Budget Tier Presets */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
                   gap: '0.85rem',
                   marginBottom: '1.25rem',
                 }}>
@@ -1045,6 +1054,22 @@ export default function PlannerForm({
       <style>{`
         @media (max-width: 640px) {
           .hide-on-mobile {
+            display: none !important;
+          }
+        }
+        @media (max-width: 580px) {
+          .tick-label-full {
+            display: none !important;
+          }
+          .tick-label-short {
+            display: inline !important;
+          }
+        }
+        @media (min-width: 581px) {
+          .tick-label-full {
+            display: inline !important;
+          }
+          .tick-label-short {
             display: none !important;
           }
         }

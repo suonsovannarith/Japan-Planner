@@ -10,6 +10,7 @@ import CostBreakdown from './components/CostBreakdown';
 import TripPrep from './components/TripPrep';
 import ShareExportModal from './components/ShareExportModal';
 import Footer from './components/Footer';
+import SakuraBackground from './components/SakuraBackground';
 import { generateSmartItinerary } from './data/itineraryGenerator';
 
 export default function App() {
@@ -103,24 +104,10 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
       
-      {/* Subtle Falling Sakura Petals Background Animation */}
-      <div aria-hidden="true" style={{ pointerEvents: 'none' }}>
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="sakura-petal"
-            style={{
-              left: `${15 + i * 15}%`,
-              width: `${12 + (i % 3) * 4}px`,
-              height: `${14 + (i % 3) * 4}px`,
-              animationDuration: `${9 + i * 2}s`,
-              animationDelay: `${i * 1.5}s`,
-            }}
-          />
-        ))}
-      </div>
+      {/* Ambient Sakura Branches & Falling Petals Background Animation */}
+      <SakuraBackground theme={theme} />
 
       {/* Navigation Bar */}
       <Navbar

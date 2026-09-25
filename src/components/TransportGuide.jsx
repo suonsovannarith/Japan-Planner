@@ -128,7 +128,7 @@ export default function TransportGuide({ itinerary, currency }) {
 
         {/* Category Content */}
         {activeCategory === 'trains' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '1.5rem' }}>
             
             {/* Shinkansen Bullet Train Breakdown */}
             <div className="glass-card" style={{ padding: '1.5rem' }}>
@@ -216,7 +216,7 @@ export default function TransportGuide({ itinerary, currency }) {
         )}
 
         {activeCategory === 'planes' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '1.5rem' }}>
             
             <div className="glass-card" style={{ padding: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
@@ -272,7 +272,7 @@ export default function TransportGuide({ itinerary, currency }) {
         )}
 
         {activeCategory === 'automobiles' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '1.5rem' }}>
             
             <div className="glass-card" style={{ padding: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
@@ -334,7 +334,7 @@ export default function TransportGuide({ itinerary, currency }) {
         )}
 
         {activeCategory === 'iccards' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 290px), 1fr))', gap: '1.5rem' }}>
             
             <div className="glass-card" style={{ padding: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
