@@ -1,0 +1,542 @@
+// Comprehensive destinations & activities database for Japan Travel Planner
+
+export const CITIES = {
+  tokyo: {
+    id: 'tokyo',
+    name: 'Tokyo',
+    kanji: '東京',
+    region: 'Kanto',
+    coordinates: { x: 670, y: 440, lat: 35.6762, lng: 139.6503 },
+    tagline: 'The electrifying collision of neon future and ancient temple quietude',
+    heroImage: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+    tags: ['metropolis', 'anime', 'food', 'shopping', 'nightlife', 'culture'],
+    avgHotelPerNight: { budget: 7000, mid: 18000, luxury: 55000 },
+    highlights: [
+      {
+        name: 'Senso-ji & Asakusa',
+        kanji: '浅草寺',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 0,
+        description: 'Tokyo\'s oldest and most iconic Buddhist temple. Enter through the dramatic Kaminarimon (Thunder Gate) and browse traditional snacks along Nakamise-dori.',
+        tip: 'Visit before 8:30 AM to beat tour crowds and hear the morning temple chimes.',
+      },
+      {
+        name: 'Shibuya Crossing & Hachiko',
+        kanji: '渋谷スクランブル交差点',
+        category: 'metropolis',
+        timeSlot: 'afternoon',
+        duration: '2 hrs',
+        cost: 0,
+        description: 'The world\'s busiest pedestrian intersection. Head up to Shibuya Sky rooftop observatory for breathtaking 360-degree city views.',
+        tip: 'Reserve sunset Shibuya Sky slots 4 weeks in advance online.',
+      },
+      {
+        name: 'Akihabara Electric Town',
+        kanji: '秋葉原',
+        category: 'anime',
+        timeSlot: 'afternoon',
+        duration: '3 hrs',
+        cost: 1500,
+        description: 'The global mecca of otaku culture, retro gaming (Super Potato), multi-floor manga stores (Mandarake), and maid cafes.',
+        tip: 'Sunday afternoons close the main Chuo-dori avenue to vehicular traffic for pedestrians.',
+      },
+      {
+        name: 'teamLab Planets / Borderless',
+        kanji: 'チームラボ',
+        category: 'metropolis',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 4200,
+        description: 'World-renowned immersive digital art museum where art and physical senses dissolve into infinite crystal lights and water gardens.',
+        tip: 'Wear pants you can roll up to the knee for water exhibits at Planets.',
+      },
+      {
+        name: 'Shinjuku Omoide Yokocho & Golden Gai',
+        kanji: '思い出横丁 / ゴールデン街',
+        category: 'nightlife',
+        timeSlot: 'evening',
+        duration: '3 hrs',
+        cost: 4000,
+        description: 'Atmospheric post-war drinking alleys lined with tiny 6-seater yakitori taverns and eccentric theme bars.',
+        tip: 'Look for bars with English signs or "No Cover Charge" to avoid surprise table fees.',
+      },
+      {
+        name: 'Meiji Jingu Shrine & Harajuku Takeshita-dori',
+        kanji: '明治神宮 / 原宿',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '3 hrs',
+        cost: 0,
+        description: 'A serene evergreen forest hiding Tokyo\'s supreme imperial Shinto shrine, contrasting directly with Harajuku\'s wild youth fashion.',
+        tip: 'Write an Ema wooden prayer plaque and hang it beneath the sacred camphor trees.',
+      },
+      {
+        name: 'Tsukiji Outer Market & Ginza Dining',
+        kanji: '築地場外市場 / 銀座',
+        category: 'food',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 3500,
+        description: 'Fresh bluefin tuna nigiri, tamagoyaki skewers, grilled wagyu skewers, and fresh sea urchin from legendary stall merchants.',
+        tip: 'Come hungry around 8:00 AM; stalls start shutting down by 1:30 PM.',
+      }
+    ]
+  },
+
+  hakone: {
+    id: 'hakone',
+    name: 'Hakone & Mt. Fuji',
+    kanji: '箱根 / 富士山',
+    region: 'Kanagawa',
+    coordinates: { x: 640, y: 460, lat: 35.2324, lng: 139.1069 },
+    tagline: 'Misty volcanic hot spring valleys framing majestic Mount Fuji',
+    heroImage: 'https://images.unsplash.com/photo-1528164344705-475426879c0d?auto=format&fit=crop&w=1200&q=80',
+    tags: ['nature', 'onsen', 'culture', 'relaxing'],
+    avgHotelPerNight: { budget: 11000, mid: 28000, luxury: 75000 },
+    highlights: [
+      {
+        name: 'Owakudani Volcanic Valley',
+        kanji: '大涌谷',
+        category: 'nature',
+        timeSlot: 'morning',
+        duration: '2 hrs',
+        cost: 500,
+        description: 'Active sulfuric sulfur vents with steaming fumaroles. Taste legendary Kuro-tamago (black eggs boiled in mineral water said to add 7 years to life).',
+        tip: 'Board the Hakone Ropeway from Sounzan for jaw-dropping Mt. Fuji views on clear days.',
+      },
+      {
+        name: 'Lake Ashi Pirate Cruise & Hakone Shrine Torii',
+        kanji: '芦ノ湖 / 箱根神社 平和の鳥居',
+        category: 'nature',
+        timeSlot: 'afternoon',
+        duration: '2.5 hrs',
+        cost: 1200,
+        description: 'Scenic cruise across Lake Ashi to the iconic vermillion "Torii of Peace" standing majestically inside the lake waters.',
+        tip: 'Morning light produces the best photo reflections without long queues at the lakeside gate.',
+      },
+      {
+        name: 'Traditional Onsen Ryokan & Kaiseki Feast',
+        kanji: '温泉旅館 懐石料理',
+        category: 'onsen',
+        timeSlot: 'evening',
+        duration: 'Overnight',
+        cost: 15000,
+        description: 'Submerge in therapeutic mineral waters, don a cotton yukata, and savor an elaborate multi-course seasonal Kaiseki banquet.',
+        tip: 'Book a ryokan with a "kashikiri" (private rental bath) if you have tattoos or travel as a couple.',
+      }
+    ]
+  },
+
+  kyoto: {
+    id: 'kyoto',
+    name: 'Kyoto',
+    kanji: '京都',
+    region: 'Kansai',
+    coordinates: { x: 530, y: 470, lat: 35.0116, lng: 135.7681 },
+    tagline: 'The thousand-year imperial soul of Japan, alive with Zen and bamboo groves',
+    heroImage: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+    tags: ['culture', 'nature', 'food', 'traditional', 'relaxing'],
+    avgHotelPerNight: { budget: 6500, mid: 19000, luxury: 60000 },
+    highlights: [
+      {
+        name: 'Fushimi Inari Taisha',
+        kanji: '伏見稲荷大社',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '3 hrs',
+        cost: 0,
+        description: 'Ten thousand vibrant vermillion Torii gates winding up the sacred Mount Inari forest dedicated to the god of rice and commerce.',
+        tip: 'Arrive at sunrise (6:30 AM) to experience eerie quiet and ethereal sun rays slicing through gates.',
+      },
+      {
+        name: 'Kinkaku-ji (The Golden Pavilion)',
+        kanji: '金閣寺',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '1.5 hrs',
+        cost: 500,
+        description: 'A Zen Buddhist temple whose top two floors are completely covered in pure gold leaf, mirrored across a pristine tranquil reflecting pond.',
+        tip: 'Best photographed on calm sunny mornings when water reflection is crystal clear.',
+      },
+      {
+        name: 'Arashiyama Bamboo Grove & Monkey Park',
+        kanji: '嵐山 竹林の小径',
+        category: 'nature',
+        timeSlot: 'afternoon',
+        duration: '3.5 hrs',
+        cost: 600,
+        description: 'Towering stalks of emerald bamboo rustling in the wind, paired with the historic wooden Togetsukyo Bridge and wild macaque park.',
+        tip: 'Hire a hand-pulled rickshaw or rent a city bicycle to explore deeper hidden temples like Tenryu-ji.',
+      },
+      {
+        name: 'Gion District & Pontocho Alley',
+        kanji: '祇園 / 先斗町',
+        category: 'culture',
+        timeSlot: 'evening',
+        duration: '2.5 hrs',
+        cost: 3000,
+        description: 'Historic wooden machiya merchant townhouses where geiko and maiko hurry to evening teahouse appointments along lantern-lit stone alleys.',
+        tip: 'Strictly respect photography etiquette; do not block or touch walking geiko.',
+      },
+      {
+        name: 'Traditional Tea Ceremony & Matcha Workshop',
+        kanji: '茶道体験',
+        category: 'traditional',
+        timeSlot: 'afternoon',
+        duration: '1.5 hrs',
+        cost: 3500,
+        description: 'Learn the meditative Zen principles of "Wa-Kei-Sei-Jaku" (Harmony, Respect, Purity, Tranquility) while whisking authentic Uji ceremonial matcha.',
+        tip: 'Combine with kimono rental for a magical cultural afternoon.',
+      }
+    ]
+  },
+
+  nara: {
+    id: 'nara',
+    name: 'Nara',
+    kanji: '奈良',
+    region: 'Kansai',
+    coordinates: { x: 545, y: 485, lat: 34.6851, lng: 135.8048 },
+    tagline: 'Ancient capital where sacred bowing deer wander freely beneath the Great Bronze Buddha',
+    heroImage: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1200&q=80',
+    tags: ['culture', 'nature', 'animals', 'history'],
+    avgHotelPerNight: { budget: 5500, mid: 15000, luxury: 45000 },
+    highlights: [
+      {
+        name: 'Todai-ji & Daibutsu (Great Buddha)',
+        kanji: '東大寺 大仏殿',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '2 hrs',
+        cost: 800,
+        description: 'One of the world\'s largest wooden buildings sheltering a colossal 15-meter bronze Buddha cast in the 8th century.',
+        tip: 'Check out the temple pillar with a hole carved through its base; squeeze through for enlightenment!',
+      },
+      {
+        name: 'Nara Park Free-Roaming Sika Deer',
+        kanji: '奈良公園の鹿',
+        category: 'nature',
+        timeSlot: 'afternoon',
+        duration: '2 hrs',
+        cost: 200,
+        description: 'Over 1,200 sacred wild sika deer roam peacefully. Buy deer crackers (shika-senbei) and watch them politely bow for food.',
+        tip: 'Deer can get persistent if they smell treats; hold both hands up to signal you\'re out of food.',
+      },
+      {
+        name: 'Kasuga Taisha Shrine & Lantern Paths',
+        kanji: '春日大社',
+        category: 'culture',
+        timeSlot: 'afternoon',
+        duration: '1.5 hrs',
+        cost: 500,
+        description: 'Ancient Shinto shrine famed for its thousands of moss-covered stone lanterns lining quiet primordial cedar forest trails.',
+        tip: 'Visit in the late afternoon as lanterns cast long golden forest shadows.',
+      }
+    ]
+  },
+
+  osaka: {
+    id: 'osaka',
+    name: 'Osaka',
+    kanji: '大阪',
+    region: 'Kansai',
+    coordinates: { x: 520, y: 480, lat: 34.6937, lng: 135.5023 },
+    tagline: 'The hearty, laughter-filled culinary kitchen of Japan ("Kuidaore" - eat till you drop)',
+    heroImage: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=1200&q=80',
+    tags: ['food', 'nightlife', 'metropolis', 'shopping', 'entertainment'],
+    avgHotelPerNight: { budget: 6000, mid: 16000, luxury: 48000 },
+    highlights: [
+      {
+        name: 'Dotonbori Neon District & Glico Man',
+        kanji: '道頓堀 / グリコサイン',
+        category: 'nightlife',
+        timeSlot: 'evening',
+        duration: '3 hrs',
+        cost: 2500,
+        description: 'Sensory overload of giant 3D mechanical crab signs, roaring dragons, sizzling takoyaki octopus balls, and the iconic runner billboard.',
+        tip: 'Take a Dotonbori River sightseeing cruise with an Osaka Amazing Pass.',
+      },
+      {
+        name: 'Osaka Castle & Surrounding Park',
+        kanji: '大阪城',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 600,
+        description: 'Formidable samurai stronghold built by Toyotomi Hideyoshi with sweeping observation views and grand stone moats.',
+        tip: 'Spring cherry blossoms and autumn ginkgo leaves make the outer garden moats spectacular.',
+      },
+      {
+        name: 'Shinsekai & Tsutenkaku Tower Kushikatsu Feast',
+        kanji: '新世界 / 通天閣 / 串カツ',
+        category: 'food',
+        timeSlot: 'afternoon',
+        duration: '2.5 hrs',
+        cost: 2200,
+        description: 'Retro Showa-era district known for golden crispy skewered meat & veggies (Kushikatsu). Golden rule: "Never double dip in the communal sauce!"',
+        tip: 'Try Daruma Kushikatsu, the birthplace of Osaka skewers with its grumpy mascot chef.',
+      },
+      {
+        name: 'Universal Studios Japan & Super Nintendo World',
+        kanji: 'ユニバーサル・スタジオ・ジャパン',
+        category: 'entertainment',
+        timeSlot: 'full-day',
+        duration: '7 hrs',
+        cost: 9500,
+        description: 'Step into real-life Mario Kart, punch question-mark coin blocks with Power-Up bands, and drink butterbeer in Hogwarts.',
+        tip: 'Purchase Express Pass months ahead or enter at park opening for Area Timed Entry.',
+      }
+    ]
+  },
+
+  hiroshima: {
+    id: 'hiroshima',
+    name: 'Hiroshima & Miyajima',
+    kanji: '広島 / 宮島',
+    region: 'Chugoku',
+    coordinates: { x: 380, y: 500, lat: 34.3853, lng: 132.4553 },
+    tagline: 'A triumphant testament to peace, paired with Miyajima\'s floating sea sanctuary',
+    heroImage: 'https://images.unsplash.com/photo-1554797589-7241bb691973?auto=format&fit=crop&w=1200&q=80',
+    tags: ['culture', 'nature', 'food', 'history'],
+    avgHotelPerNight: { budget: 5000, mid: 14000, luxury: 42000 },
+    highlights: [
+      {
+        name: 'Miyajima & Floating Itsukushima Shrine',
+        kanji: '厳島神社 大鳥居',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '4 hrs',
+        cost: 1000,
+        description: 'A magical Shinto shrine built over tidal flats. At high tide, the vermillion grand Torii appears to float directly upon the Seto Inland Sea.',
+        tip: 'Walk right up to the base of the gigantic camphor-wood gate at low tide, then watch high tide roll in.',
+      },
+      {
+        name: 'Hiroshima Peace Memorial Park & A-Bomb Dome',
+        kanji: '平和記念公園 / 原爆ドーム',
+        category: 'culture',
+        timeSlot: 'afternoon',
+        duration: '3 hrs',
+        cost: 200,
+        description: 'A deeply moving UNESCO World Heritage memorial museum advocating for worldwide peace and the eternal Children\'s Peace Monument.',
+        tip: 'Leave a folded paper origami crane at the Sadako Sasaki statue.',
+      },
+      {
+        name: 'Hiroshima-style Okonomiyaki at Okonomimura',
+        kanji: '広島風お好み焼き (お好み村)',
+        category: 'food',
+        timeSlot: 'evening',
+        duration: '1.5 hrs',
+        cost: 1600,
+        description: 'Savory layered cabbage, pork, yakisoba noodles, fried egg, and sweet savory Otafuku sauce grilled right on the iron teppan before your eyes.',
+        tip: 'Eat it directly off the hot griddle using the traditional metal spatula (hera).',
+      }
+    ]
+  },
+
+  kanazawa: {
+    id: 'kanazawa',
+    name: 'Kanazawa',
+    kanji: '金沢',
+    region: 'Chubu / Hokuriku',
+    coordinates: { x: 560, y: 390, lat: 36.5613, lng: 136.6562 },
+    tagline: 'The Edo artisan gem of samurai districts, geisha teahouses, and gold leaf',
+    heroImage: 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=1200&q=80',
+    tags: ['culture', 'traditional', 'food', 'gardens', 'relaxing'],
+    avgHotelPerNight: { budget: 5500, mid: 15000, luxury: 45000 },
+    highlights: [
+      {
+        name: 'Kenroku-en Garden',
+        kanji: '兼六園',
+        category: 'nature',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 320,
+        description: 'Considered one of the "Three Great Gardens of Japan," displaying the 6 sublime landscape attributes of spaciousness, seclusion, and water elegance.',
+        tip: 'In winter, marvel at the "Yukitsuri" conical rope umbrellas protecting pine branches from heavy snow.',
+      },
+      {
+        name: 'Higashi Chaya Geisha District',
+        kanji: '東茶屋街',
+        category: 'traditional',
+        timeSlot: 'afternoon',
+        duration: '2 hrs',
+        cost: 1000,
+        description: 'Latticed Edo wooden teahouses where you can taste 24-karat pure edible gold leaf soft-serve ice cream and browse lacquerware.',
+        tip: 'Visit Hakuichi shop for the famous gold-leaf ice cream photo.',
+      },
+      {
+        name: 'Omicho Market Seafood Feast',
+        kanji: '近江町市場',
+        category: 'food',
+        timeSlot: 'morning',
+        duration: '2 hrs',
+        cost: 2800,
+        description: '"Kanazawa\'s Kitchen" overflowing with fresh Sea of Japan snow crab, sweet botan shrimp, and opulent kaisen-don sashimi rice bowls.',
+        tip: 'Arrive at 11:00 AM to beat the lunch line for renowned sashimi bowls.',
+      }
+    ]
+  },
+
+  takayama: {
+    id: 'takayama',
+    name: 'Takayama & Shirakawa-go',
+    kanji: '高山 / 白川郷',
+    region: 'Chubu / Gifu',
+    coordinates: { x: 580, y: 410, lat: 36.1460, lng: 137.2522 },
+    tagline: 'Fairy-tale steep-thatched Gassho-zukuri farmhouses nestled in the Japanese Alps',
+    heroImage: 'https://images.unsplash.com/photo-1492571350019-22de08371fd3?auto=format&fit=crop&w=1200&q=80',
+    tags: ['nature', 'traditional', 'food', 'culture'],
+    avgHotelPerNight: { budget: 6000, mid: 17000, luxury: 50000 },
+    highlights: [
+      {
+        name: 'Shirakawa-go Historic Thatched Village',
+        kanji: '白川郷 合掌造り集落',
+        category: 'traditional',
+        timeSlot: 'morning',
+        duration: '3.5 hrs',
+        cost: 500,
+        description: 'UNESCO World Heritage alpine village with steep pitched thatched roofs constructed entirely without nails to withstand mammoth mountain snowfalls.',
+        tip: 'Hike up to the Shiroyama Viewpoint for the postcard-perfect panoramic valley shot.',
+      },
+      {
+        name: 'Takayama Sanmachi Suji Old Town & Hida Beef',
+        kanji: '高山 三町通り / 飛騨牛',
+        category: 'food',
+        timeSlot: 'afternoon',
+        duration: '2.5 hrs',
+        cost: 2500,
+        description: 'Preserved timber merchant houses with flowing street canal waters. Sample melt-in-your-mouth A5 Hida beef nigiri served on shrimp rice crackers.',
+        tip: 'Look for cedar balls (Sugidama) hanging above doorways indicating fresh sake brewing.',
+      }
+    ]
+  },
+
+  fukuoka: {
+    id: 'fukuoka',
+    name: 'Fukuoka (Kyushu)',
+    kanji: '福岡 / 博多',
+    region: 'Kyushu',
+    coordinates: { x: 260, y: 550, lat: 33.5902, lng: 130.4017 },
+    tagline: 'The vibrant southern gateway celebrated for open-air Yatai food stalls and Tonkotsu ramen',
+    heroImage: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=1200&q=80',
+    tags: ['food', 'nightlife', 'metropolis', 'relaxed'],
+    avgHotelPerNight: { budget: 4800, mid: 13000, luxury: 38000 },
+    highlights: [
+      {
+        name: 'Nakasu Riverside Yatai Street Food Stalls',
+        kanji: '中洲 屋台街',
+        category: 'food',
+        timeSlot: 'evening',
+        duration: '3 hrs',
+        cost: 2400,
+        description: 'Mobile open-air food carts unfolding along the river at sunset. Sit shoulder-to-shoulder with locals over piping hot Hakata ramen and gyoza.',
+        tip: 'Order Hakata ramen noodles "Katame" (firm) and ask for "Kaedama" (noodle refill) for ¥150.',
+      },
+      {
+        name: 'Dazaifu Tenmangu Shrine',
+        kanji: '太宰府天満宮',
+        category: 'culture',
+        timeSlot: 'morning',
+        duration: '2.5 hrs',
+        cost: 0,
+        description: 'Magnificent shrine honoring the god of literature and academics, surrounded by 6,000 plum trees and bridge over heart-shaped Shinji pond.',
+        tip: 'Eat fresh Umegae Mochi (toasted sweet red-bean rice cake) sold piping hot on the approach.',
+      }
+    ]
+  },
+
+  hokkaido: {
+    id: 'hokkaido',
+    name: 'Hokkaido (Sapporo & Otaru)',
+    kanji: '北海道 / 札幌 / 小樽',
+    region: 'Hokkaido',
+    coordinates: { x: 740, y: 160, lat: 43.0618, lng: 141.3545 },
+    tagline: 'Pristine northern wilderness, world-class powder snow, King Crab and miso ramen',
+    heroImage: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=1200&q=80',
+    tags: ['nature', 'food', 'winter', 'scenic', 'relaxing'],
+    avgHotelPerNight: { budget: 5200, mid: 14000, luxury: 42000 },
+    highlights: [
+      {
+        name: 'Sapporo Ramen Yokocho & Susukino',
+        kanji: '元祖さっぽろラーメン横丁',
+        category: 'food',
+        timeSlot: 'evening',
+        duration: '2.5 hrs',
+        cost: 1400,
+        description: 'Rich, warming Sapporo Miso Ramen crowned with sweet Hokkaido sweet corn and melting pat of local butter.',
+        tip: 'Susukino is Hokkaido\'s neon entertainment hub; finish with a "shime-parfait" (late-night parfait dessert).',
+      },
+      {
+        name: 'Otaru Canal & Music Box Museum',
+        kanji: '小樽運河 / オルゴール堂',
+        category: 'culture',
+        timeSlot: 'afternoon',
+        duration: '3.5 hrs',
+        cost: 1500,
+        description: 'Romantic gas lamp-lit canal flanked by century-old brick warehouses converted into glass craft studios and pastry cafes.',
+        tip: 'Try LeTAO double fromage cheesecake in Sakaimachi street.',
+      },
+      {
+        name: 'Niseko / Mt. Yotei Alpine Wilderness',
+        kanji: 'ニセコ / 羊蹄山',
+        category: 'nature',
+        timeSlot: 'morning',
+        duration: '4 hrs',
+        cost: 4000,
+        description: 'Hokkaido\'s famous "Mt. Fuji of the North" with untamed alpine flowers in summer and champagne powder snow in winter.',
+        tip: 'Rent a car to explore the stunning Shakotan peninsula and Cape Kamui.',
+      }
+    ]
+  }
+};
+
+// Travel Pass Data & Transport Rules
+export const TRANSPORT_PASSES = {
+  jrPass7: {
+    name: 'JR Nationwide 7-Day Pass',
+    priceJPY: 50000,
+    priceUSD: 335,
+    bestFor: 'High-speed multi-region travel across Tokyo, Kyoto, Osaka & Hiroshima within 7 consecutive days',
+    shinkansenIncluded: 'Hikari, Sakura, Kodama (Nozomi/Mizuho requires extra surcharge ticket)',
+    worthItNote: 'Following the 2023 68% price hike, this is ONLY cost-effective if you make at least 2 long-distance Shinkansen hops (e.g. Tokyo -> Kyoto -> Hiroshima -> Tokyo).'
+  },
+  jrPass14: {
+    name: 'JR Nationwide 14-Day Pass',
+    priceJPY: 80000,
+    priceUSD: 535,
+    bestFor: 'Extensive multi-city itinerary spanning Tokyo to Kyushu or Hokkaido within 14 days',
+    shinkansenIncluded: 'All standard Shinkansen lines with JR ticket counters',
+    worthItNote: 'Compare individual Shinkansen point-to-point tickets or consider regional JR passes.'
+  },
+  regionalKansaiHiroshima: {
+    name: 'JR Kansai-Hiroshima Area Pass (5 Days)',
+    priceJPY: 17000,
+    priceUSD: 115,
+    bestFor: 'BEST VALUE: Covers Kyoto, Osaka, Nara, Kobe, Himeji Castle, and Hiroshima/Miyajima with UNLIMITED Sanyo Shinkansen (including fast Nozomi & Hello Kitty Shinkansen!).',
+    worthItNote: 'Huge savings! A round-trip Shinkansen between Osaka and Hiroshima alone costs ¥21,000, making this an instant money-saver.'
+  },
+  icCard: {
+    name: 'IC Card (Suica / Pasmo / Icoca)',
+    priceJPY: 2000, // Includes 500 yen refundable deposit
+    priceUSD: 14,
+    bestFor: 'Universal tap-and-go contactless card for Tokyo metro, Kyoto city buses, Osaka loop line, convenience stores (7-Eleven, Lawson), and vending machines.',
+    worthItNote: 'Essential for all travelers! iPhone users can add digital Suica or Pasmo directly to Apple Wallet without a physical card.'
+  },
+  carRental: {
+    name: 'Automobile / Car Rental',
+    costPerDayJPY: 8500,
+    costPerDayUSD: 58,
+    bestFor: 'Exploring Mt. Fuji Five Lakes, Japanese Alps (Takayama/Shirakawa-go), Hokkaido scenic roads, and rural Kyushu.',
+    avoidIn: 'Strictly avoid driving inside central Tokyo, Kyoto, and Osaka due to severe traffic, complex one-way alleys, and parking fees up to ¥3,000/hr.',
+    requirement: 'Physical International Driving Permit (IDP) 1949 Geneva Convention required; Japanese police will not accept domestic licenses.'
+  },
+  domesticFlights: {
+    name: 'Domestic Flights (ANA / JAL / Low-Cost Carriers)',
+    costOneWayJPY: 7500,
+    costOneWayUSD: 50,
+    bestFor: 'Hopping long distances quickly: Tokyo to Sapporo (1.5 hrs vs 8 hrs train) or Tokyo to Fukuoka/Okinawa.',
+    tips: 'Look into the "ANA Discover Japan Fare" or "JAL Japan Explorer Pass" offering discounted ¥5,500 - ¥11,000 flights for foreign visitors.'
+  }
+};
