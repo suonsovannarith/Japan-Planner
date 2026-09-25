@@ -14,8 +14,14 @@ import SakuraBackground from './components/SakuraBackground';
 import { generateSmartItinerary } from './data/itineraryGenerator';
 
 export default function App() {
-  // Theme state
-  const [theme, setTheme] = useState('dark');
+  // Theme state: defaults to 'light' (airy sakura theme) with localStorage persistence
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('komorebi_theme') || 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [currency, setCurrency] = useState('USD');
   const [activeTab, setActiveTab] = useState('planner');
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -30,9 +36,14 @@ export default function App() {
   const [travelers, setTravelers] = useState(2);
   const [targetBudget, setTargetBudget] = useState(null);
 
-  // Sync theme attribute to document body
+  // Sync theme attribute to document body and save preference
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('komorebi_theme', theme);
+    } catch {
+      // ignore storage errors
+    }
   }, [theme]);
 
   // Read URL query params on initial load
