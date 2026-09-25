@@ -11,7 +11,7 @@
   --bg-surface-hover: rgba(30, 39, 58, 0.9);
   --bg-surface-elevated: #1a2233;
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(230, 57, 70, 0.45);
+  --border-active: rgba(230, 57, 70, 0.55);
   
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
@@ -30,8 +30,8 @@
   /* Glassmorphism */
   --glass-blur: blur(16px);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --card-radius: 16px;
-  --btn-radius: 10px;
+  --card-radius: 20px;
+  --btn-radius: 12px;
 
   --shinkansen-blue: #0077b6;
   --shinkansen-glow: rgba(0, 119, 182, 0.4);
@@ -68,7 +68,7 @@ body {
   font-family: var(--font-main);
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.65;
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
@@ -84,9 +84,9 @@ body::before {
   width: 100vw;
   height: 100vh;
   background: 
-    radial-gradient(circle at 15% 20%, rgba(230, 57, 70, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(58, 134, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(244, 162, 97, 0.03) 0%, transparent 60%);
+    radial-gradient(circle at 15% 20%, rgba(230, 57, 70, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(58, 134, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(244, 162, 97, 0.04) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -122,7 +122,7 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--card-radius);
   box-shadow: var(--glass-shadow);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
@@ -140,13 +140,13 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, #e63946, #d90429);
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #e63946, #c1121f);
   color: #ffffff;
-  padding: 0.85rem 1.6rem;
+  padding: 0.95rem 1.8rem;
   border-radius: var(--btn-radius);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   box-shadow: 0 4px 20px var(--accent-crimson-glow);
   transition: all 0.25s ease;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -164,7 +164,7 @@ button {
   gap: 0.5rem;
   background: var(--bg-surface-elevated);
   color: var(--text-primary);
-  padding: 0.85rem 1.5rem;
+  padding: 0.9rem 1.6rem;
   border-radius: var(--btn-radius);
   font-weight: 600;
   font-size: 0.95rem;
@@ -182,7 +182,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.25rem 0.65rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -212,6 +212,67 @@ button {
   background: rgba(58, 134, 255, 0.15);
   color: #3a86ff;
   border: 1px solid rgba(58, 134, 255, 0.3);
+}
+
+/* Custom Precision Range Slider */
+.custom-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.custom-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3.5px solid var(--accent-crimson);
+  box-shadow: 0 0 14px rgba(230, 57, 70, 0.65), 0 2px 6px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.custom-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 18px rgba(230, 57, 70, 0.85), 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.custom-range-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.22);
+}
+
+.custom-range-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3.5px solid var(--accent-crimson);
+  box-shadow: 0 0 14px rgba(230, 57, 70, 0.65), 0 2px 6px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+}
+
+/* Wizard Animations & Layout */
+.wizard-step-enter {
+  animation: wizardStepEnter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes wizardStepEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Falling Sakura Petals Background Animation */

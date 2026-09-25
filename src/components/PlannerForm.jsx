@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  Landmark, Utensils, Gamepad2, Mountain, Sparkles, Building2, Brush, Wine, 
-  Clock, MapPin, Users, Check, ChevronRight, Zap
+  Clock, MapPin, Sparkles, Zap, Users, ArrowRight, ArrowLeft, 
+  Check, Landmark, Utensils, Gamepad2, Mountain, Building2, Brush, Wine, Compass, CheckCircle2
 } from 'lucide-react';
 import { INTEREST_CATEGORIES, PACE_OPTIONS, BUDGET_TIERS } from '../data/interests';
 
@@ -32,6 +32,83 @@ export default function PlannerForm({
   setTravelers,
   onGenerateItinerary
 }) {
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Slider bounds
+  const minDays = 3;
+  const maxDays = 30;
+
+  // Accurate slider percentage calculation
+  const sliderPercentage = Math.max(0, Math.min(100, ((duration - minDays) / (maxDays - minDays)) * 100));
+
+  // Key duration tick marks mapped accurately to their mathematical percentage
+  const durationTicks = [
+    { val: 3, label: '3d', fullLabel: '3 Days' },
+    { val: 7, label: '7d', fullLabel: '1 Week (7d)' },
+    { val: 14, label: '14d', fullLabel: '2 Weeks (14d)' },
+    { val: 21, label: '21d', fullLabel: '3 Weeks (21d)' },
+    { val: 30, label: '30d', fullLabel: '1 Month (30d)' },
+  ];
+
+  // Quick preset pills
+  const presets = [
+    { d: 4, label: '3-4 Days', sub: 'Tokyo or Kansai Express' },
+    { d: 7, label: '7 Days', sub: 'Classic 1-Week Golden Route' },
+    { d: 10, label: '10 Days', sub: 'Kanto, Fuji & Kansai' },
+    { d: 14, label: '14 Days', sub: '2-Week Deep Dive Odyssey' },
+    { d: 21, label: '21 Days', sub: '3-Week Multi-Region' },
+    { d: 28, label: '28 Days', sub: '1-Month Grand Expedition' }
+  ];
+
+  // Gateways
+  const cities = [
+    {
+      id: 'tokyo',
+      name: 'Tokyo',
+      kanji: '東京',
+      airport: 'NRT / HND',
+      desc: 'Metropolis, cyberpunk nightlife, teamLab, Harajuku & ancient Asakusa',
+      image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
+      badge: 'Most Popular Hub'
+    },
+    {
+      id: 'osaka',
+      name: 'Osaka',
+      kanji: '大阪',
+      airport: 'KIX Airport',
+      desc: 'The nation’s culinary kitchen, lively Dotonbori neon & Universal Studios',
+      image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=600&q=80',
+      badge: 'Food & Entertainment'
+    },
+    {
+      id: 'kyoto',
+      name: 'Kyoto',
+      kanji: '京都',
+      airport: 'Via KIX / ITM',
+      desc: 'Imperial heartland with 10,000 Torii gates, bamboo groves & Zen temples',
+      image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
+      badge: 'Historic & Cultural'
+    },
+    {
+      id: 'fukuoka',
+      name: 'Fukuoka',
+      kanji: '福岡',
+      airport: 'FUK Airport',
+      desc: 'Kyushu gateway famous for riverside open-air Yatai food stalls & Hakata ramen',
+      image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
+      badge: 'Southern Gourmet'
+    },
+    {
+      id: 'hokkaido',
+      name: 'Sapporo',
+      kanji: '札幌',
+      airport: 'CTS Airport',
+      desc: 'Hokkaido wilderness, alpine snow, Otaru romantic canal & miso ramen',
+      image: 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
+      badge: 'Northern Nature'
+    }
+  ];
+
   const toggleInterest = (id) => {
     if (interests.includes(id)) {
       if (interests.length > 1) {
@@ -42,208 +119,483 @@ export default function PlannerForm({
     }
   };
 
-  const cities = [
-    { id: 'tokyo', name: 'Tokyo', sub: 'Narita / Haneda (NRT/HND)', kanji: '東京' },
-    { id: 'osaka', name: 'Osaka', sub: 'Kansai Airport (KIX)', kanji: '大阪' },
-    { id: 'kyoto', name: 'Kyoto', sub: 'Historical Heartland', kanji: '京都' },
-    { id: 'fukuoka', name: 'Fukuoka', sub: 'Kyushu Gateway (FUK)', kanji: '福岡' },
-    { id: 'hokkaido', name: 'Sapporo', sub: 'New Chitose (CTS)', kanji: '札幌' }
+  const stepsMeta = [
+    { num: 1, title: 'Trip Duration', short: 'Duration' },
+    { num: 2, title: 'Starting Gateway', short: 'Arrival Hub' },
+    { num: 3, title: 'Travel Passions', short: 'Vibes' },
+    { num: 4, title: 'Pace & Budget', short: 'Style & Budget' },
   ];
 
+  const handleNext = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onGenerateItinerary();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   return (
-    <section id="planner-wizard" style={{ padding: '2rem 0 4rem 0' }}>
-      <div className="container">
+    <section id="planner-wizard" style={{ padding: '2.5rem 0 5rem 0' }}>
+      <div className="container" style={{ maxWidth: '960px' }}>
+        
+        {/* Multi-Step Wizard Card */}
         <div className="glass-card" style={{
-          padding: 'clamp(1.5rem, 4vw, 2.5rem)',
+          padding: 'clamp(2rem, 5vw, 3.5rem)',
           border: '1px solid var(--border-subtle)',
+          borderRadius: '24px',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
           position: 'relative',
         }}>
-          
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div className="badge badge-crimson" style={{ marginBottom: '0.6rem' }}>
-              Step-by-Step Customization
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)', marginBottom: '0.5rem' }}>
-              Tell Us About Your Trip
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '0.95rem' }}>
-              We'll calculate realistic transit times, day-by-day itineraries, Shinkansen hops, and precise budget estimates.
-            </p>
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-
-            {/* 1. Trip Duration */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                <label style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Clock size={20} style={{ color: 'var(--accent-crimson)' }} />
-                  <span>1. How long will you be in Japan?</span>
-                </label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: '0.4rem',
-                  background: 'var(--bg-surface-elevated)',
-                  padding: '0.35rem 0.85rem',
-                  borderRadius: '10px',
-                  border: '1px solid var(--border-subtle)',
-                }}>
-                  <span style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--accent-crimson)' }}>
-                    {duration}
-                  </span>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                    Days ({duration - 1} Nights)
-                  </span>
-                </div>
+          {/* Stepper Header (Typeform / Airbnb Style) */}
+          <div style={{ marginBottom: '2.5rem' }}>
+            
+            {/* Top Step Breadcrumb & Status */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              marginBottom: '1.25rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span className="badge badge-crimson" style={{ letterSpacing: '0.08em', fontWeight: '800' }}>
+                  PHASE 0{currentStep} / 04
+                </span>
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                  {stepsMeta[currentStep - 1].title}
+                </span>
               </div>
 
-              {/* Slider */}
-              <div style={{ marginBottom: '1.25rem', padding: '0 0.5rem' }}>
-                <input
-                  type="range"
-                  min="3"
-                  max="30"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  style={{
-                    width: '100%',
-                    height: '8px',
-                    borderRadius: '4px',
-                    accentColor: 'var(--accent-crimson)',
-                    cursor: 'pointer',
-                  }}
-                />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                  <span>3 Days (Weekend)</span>
-                  <span>7 Days (1 Week)</span>
-                  <span>14 Days (2 Weeks)</span>
-                  <span>21 Days (3 Weeks)</span>
-                  <span>30 Days (1 Month)</span>
-                </div>
-              </div>
-
-              {/* Quick Duration Buttons */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {[
-                  { d: 4, label: '3-4 Days (Express)' },
-                  { d: 7, label: '7 Days (1 Week)' },
-                  { d: 10, label: '10 Days' },
-                  { d: 14, label: '14 Days (2 Weeks)' },
-                  { d: 21, label: '21 Days (3 Weeks)' },
-                  { d: 28, label: '28 Days (1 Month)' }
-                ].map(item => (
-                  <button
-                    key={item.d}
-                    type="button"
-                    onClick={() => setDuration(item.d)}
-                    style={{
-                      padding: '0.45rem 0.85rem',
-                      borderRadius: '8px',
-                      fontSize: '0.85rem',
-                      fontWeight: duration === item.d ? '700' : '500',
-                      border: '1px solid',
-                      borderColor: duration === item.d ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                      backgroundColor: duration === item.d ? 'rgba(230, 57, 70, 0.15)' : 'var(--bg-surface-elevated)',
-                      color: duration === item.d ? '#ff4d6d' : 'var(--text-secondary)',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 2. Starting City */}
-            <div>
-              <label style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                <MapPin size={20} style={{ color: 'var(--accent-gold)' }} />
-                <span>2. Where will you start your journey?</span>
-              </label>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '0.75rem',
-              }}>
-                {cities.map(city => {
-                  const isSelected = startingCity === city.id;
+              {/* Step indicator pills */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {stepsMeta.map((s) => {
+                  const isDone = currentStep > s.num;
+                  const isCurrent = currentStep === s.num;
                   return (
-                    <div
-                      key={city.id}
-                      onClick={() => setStartingCity(city.id)}
-                      className="glass-card"
+                    <button
+                      key={s.num}
+                      type="button"
+                      onClick={() => setCurrentStep(s.num)}
                       style={{
-                        padding: '1rem',
-                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.78rem',
+                        fontWeight: isCurrent ? '700' : '500',
+                        backgroundColor: isCurrent 
+                          ? 'rgba(230, 57, 70, 0.18)' 
+                          : isDone 
+                          ? 'rgba(42, 157, 143, 0.12)' 
+                          : 'var(--bg-surface-elevated)',
+                        color: isCurrent 
+                          ? '#ff4d6d' 
+                          : isDone 
+                          ? 'var(--accent-matcha)' 
+                          : 'var(--text-muted)',
                         border: '1px solid',
-                        borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                        backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
-                        position: 'relative',
+                        borderColor: isCurrent 
+                          ? 'var(--accent-crimson)' 
+                          : isDone 
+                          ? 'rgba(42, 157, 143, 0.3)' 
+                          : 'var(--border-subtle)',
                         transition: 'all 0.2s ease',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                        <div style={{ fontWeight: '700', fontSize: '1.05rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
-                          {city.name}
-                        </div>
-                        <span className="kanji-text" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                          {city.kanji}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                        {city.sub}
-                      </div>
-                    </div>
+                      {isDone ? (
+                        <Check size={12} strokeWidth={3} />
+                      ) : (
+                        <span>{s.num}</span>
+                      )}
+                      <span className="hide-on-mobile">{s.short}</span>
+                    </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* 3. Interests & Hobbies */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <label style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Sparkles size={20} style={{ color: 'var(--accent-sakura)' }} />
-                  <span>3. What activities and hobbies interest you?</span>
-                </label>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Selected ({interests.length} of {INTEREST_CATEGORIES.length})
-                </span>
+            {/* Seamless Top Animated Progress Bar */}
+            <div style={{
+              width: '100%',
+              height: '6px',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '9999px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${(currentStep / 4) * 100}%`,
+                background: 'linear-gradient(90deg, #e63946 0%, #f4a261 100%)',
+                boxShadow: '0 0 12px rgba(230, 57, 70, 0.6)',
+                borderRadius: '9999px',
+                transition: 'width 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              }} />
+            </div>
+
+          </div>
+
+          {/* ============================================================== */}
+          {/* PHASE 1: DURATION & SCOPE                                      */}
+          {/* ============================================================== */}
+          {currentStep === 1 && (
+            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+              
+              <div>
+                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                  How long is your Japan journey?
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
+                  Slide to any custom length from 3 to 30 days, or pick a curated travel duration below.
+                </p>
               </div>
 
+              {/* Large Dynamic Day Counter Banner */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                padding: '1.5rem 1.8rem',
+                borderRadius: '16px',
+                backgroundColor: 'var(--bg-surface-elevated)',
+                border: '1px solid var(--border-subtle)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '14px',
+                    backgroundColor: 'rgba(230, 57, 70, 0.15)',
+                    color: 'var(--accent-crimson)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 15px rgba(230, 57, 70, 0.25)',
+                  }}>
+                    <Clock size={28} />
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '2.4rem', fontWeight: '800', color: 'var(--accent-crimson)', lineHeight: 1 }}>
+                        {duration}
+                      </span>
+                      <span style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        Days
+                      </span>
+                      <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
+                        ({duration - 1} Nights)
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                      {duration <= 5 
+                        ? 'Quick City Sprint — Focused on 1 core region'
+                        : duration <= 10 
+                        ? 'Golden Route Explorer — Tokyo, Kyoto & Osaka'
+                        : duration <= 18 
+                        ? 'Grand Deep Dive — Golden Route + Hiroshima, Alps & Onsens'
+                        : 'Comprehensive Cross-Country Tour — Hokkaido to Kyushu'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="badge badge-gold" style={{ fontSize: '0.8rem', padding: '0.4rem 0.9rem' }}>
+                  {duration >= 14 ? 'Ideal for JR Passes' : 'Point-to-Point Transit'}
+                </div>
+              </div>
+
+              {/* Precision Range Slider */}
+              <div style={{ padding: '0.5rem 0.25rem' }}>
+                <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem' }}>
+                  <input
+                    type="range"
+                    min={minDays}
+                    max={maxDays}
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="custom-range-slider"
+                    style={{
+                      background: `linear-gradient(to right, #e63946 0%, #e63946 ${sliderPercentage}%, rgba(255, 255, 255, 0.12) ${sliderPercentage}%, rgba(255, 255, 255, 0.12) 100%)`,
+                    }}
+                  />
+                </div>
+
+                {/* Mathematically Aligned Landmark Ticks */}
+                <div style={{ position: 'relative', width: '100%', height: '42px', marginTop: '10px' }}>
+                  {durationTicks.map((tick) => {
+                    const tickPct = ((tick.val - minDays) / (maxDays - minDays)) * 100;
+                    const isSelected = duration === tick.val;
+
+                    return (
+                      <button
+                        key={tick.val}
+                        type="button"
+                        onClick={() => setDuration(tick.val)}
+                        style={{
+                          position: 'absolute',
+                          left: `${tickPct}%`,
+                          transform: 'translateX(-50%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          cursor: 'pointer',
+                          background: 'none',
+                          border: 'none',
+                          padding: '0 4px',
+                        }}
+                      >
+                        <div style={{
+                          width: '2px',
+                          height: '9px',
+                          backgroundColor: isSelected ? 'var(--accent-crimson)' : 'rgba(255, 255, 255, 0.25)',
+                          marginBottom: '6px',
+                          transition: 'all 0.2s ease',
+                        }} />
+                        <span style={{
+                          fontSize: '0.8rem',
+                          fontWeight: isSelected ? '800' : '500',
+                          color: isSelected ? 'var(--accent-crimson)' : 'var(--text-muted)',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.2s ease',
+                        }}>
+                          {tick.fullLabel}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quick Preset Cards Grid */}
+              <div>
+                <label style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'block', marginBottom: '1rem' }}>
+                  Or Choose a Popular Preset:
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '0.9rem',
+                }}>
+                  {presets.map((preset) => {
+                    const isActive = duration === preset.d;
+                    return (
+                      <div
+                        key={preset.d}
+                        onClick={() => setDuration(preset.d)}
+                        className="glass-card interactive-hover"
+                        style={{
+                          padding: '1.1rem 1.25rem',
+                          cursor: 'pointer',
+                          borderRadius: '14px',
+                          border: '1px solid',
+                          borderColor: isActive ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                          backgroundColor: isActive ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                          <span style={{
+                            fontWeight: '800',
+                            fontSize: '1.05rem',
+                            color: isActive ? '#ff4d6d' : 'var(--text-primary)',
+                          }}>
+                            {preset.label}
+                          </span>
+                          {isActive && (
+                            <CheckCircle2 size={18} style={{ color: 'var(--accent-crimson)' }} />
+                          )}
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                          {preset.sub}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* PHASE 2: STARTING POINT & ENTRY GATEWAY                        */}
+          {/* ============================================================== */}
+          {currentStep === 2 && (
+            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              
+              <div>
+                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                  Where does your journey begin?
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
+                  Choose your arrival airport or starting city. Bullet train connections and domestic transit will branch from here.
+                </p>
+              </div>
+
+              {/* Large Visual City Cards */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: '0.85rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '1.25rem',
               }}>
-                {INTEREST_CATEGORIES.map(category => {
+                {cities.map((city) => {
+                  const isSelected = startingCity === city.id;
+                  return (
+                    <div
+                      key={city.id}
+                      onClick={() => setStartingCity(city.id)}
+                      className="glass-card interactive-hover"
+                      style={{
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        borderRadius: '16px',
+                        border: '2px solid',
+                        borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                        backgroundColor: 'var(--bg-surface-elevated)',
+                        boxShadow: isSelected ? '0 12px 30px rgba(230, 57, 70, 0.25)' : 'none',
+                        transition: 'all 0.25s ease',
+                        position: 'relative',
+                      }}
+                    >
+                      {/* Thumbnail Header */}
+                      <div style={{
+                        position: 'relative',
+                        height: '140px',
+                        backgroundImage: `url(${city.image})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}>
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(to top, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0.2) 100%)',
+                        }} />
+
+                        {/* Top Badges */}
+                        <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span className="badge" style={{ backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(8px)', color: '#fff' }}>
+                            {city.airport}
+                          </span>
+                          {isSelected && (
+                            <div style={{
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '50%',
+                              backgroundColor: 'var(--accent-crimson)',
+                              color: '#fff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                              <Check size={14} strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* City Name in image bottom */}
+                        <div style={{ position: 'absolute', bottom: '12px', left: '14px', display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#fff' }}>
+                            {city.name}
+                          </span>
+                          <span className="kanji-text" style={{ fontSize: '1.1rem', color: 'var(--accent-gold)' }}>
+                            {city.kanji}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+                          {city.desc}
+                        </div>
+                        <span className="badge badge-matcha" style={{ fontSize: '0.7rem' }}>
+                          {city.badge}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* PHASE 3: TRAVEL VIBE & INTERESTS                               */}
+          {/* ============================================================== */}
+          {currentStep === 3 && (
+            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                    What excites you most?
+                  </h2>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
+                    Select your personal passions. We’ll prioritize morning, afternoon, and evening sights around them.
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'var(--bg-surface-elevated)',
+                  padding: '0.45rem 1rem',
+                  borderRadius: '9999px',
+                  border: '1px solid var(--border-subtle)',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  color: 'var(--accent-gold)',
+                }}>
+                  {interests.length} of {INTEREST_CATEGORIES.length} Selected
+                </div>
+              </div>
+
+              {/* Visual Vibe Cards Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '1.1rem',
+              }}>
+                {INTEREST_CATEGORIES.map((category) => {
                   const Icon = iconMap[category.icon] || Sparkles;
                   const isSelected = interests.includes(category.id);
+
                   return (
                     <div
                       key={category.id}
                       onClick={() => toggleInterest(category.id)}
                       className="glass-card interactive-hover"
                       style={{
-                        padding: '1.1rem',
+                        padding: '1.35rem',
                         cursor: 'pointer',
-                        border: '1px solid',
+                        borderRadius: '16px',
+                        border: '2px solid',
                         borderColor: isSelected ? category.color : 'var(--border-subtle)',
                         backgroundColor: isSelected ? `${category.color}15` : 'var(--bg-surface-elevated)',
-                        transition: 'all 0.2s ease',
+                        boxShadow: isSelected ? `0 10px 25px ${category.color}25` : 'none',
+                        transition: 'all 0.25s ease',
                         position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
                       }}
                     >
+                      {/* Checkmark icon */}
                       {isSelected && (
                         <div style={{
                           position: 'absolute',
-                          top: '10px',
-                          right: '10px',
-                          width: '20px',
-                          height: '20px',
+                          top: '12px',
+                          right: '12px',
+                          width: '22px',
+                          height: '22px',
                           borderRadius: '50%',
                           backgroundColor: category.color,
                           color: '#fff',
@@ -251,122 +603,170 @@ export default function PlannerForm({
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}>
-                          <Check size={12} strokeWidth={3} />
+                          <Check size={13} strokeWidth={3} />
                         </div>
                       )}
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-                        <div style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          backgroundColor: `${category.color}25`,
-                          color: category.color,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>
-                            {category.title}
+                      <div>
+                        {/* Icon & Title */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '0.6rem' }}>
+                          <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            backgroundColor: `${category.color}25`,
+                            color: category.color,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                          }}>
+                            <Icon size={22} />
                           </div>
-                          <div className="kanji-text" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            {category.kanji}
+
+                          <div>
+                            <div style={{ fontWeight: '800', fontSize: '1.05rem', color: isSelected ? '#fff' : 'var(--text-primary)' }}>
+                              {category.title}
+                            </div>
+                            <span className="kanji-text" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                              {category.kanji}
+                            </span>
                           </div>
                         </div>
+
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.85rem' }}>
+                          {category.subtitle}
+                        </p>
                       </div>
 
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                        {category.subtitle}
+                      {/* Popular Tags */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        {category.popularTags.slice(0, 3).map((tag, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              fontSize: '0.72rem',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: '6px',
+                              backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                              color: 'var(--text-muted)',
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
 
-            {/* 4. Travel Pace & Budget Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.75rem',
-            }}>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* PHASE 4: PACING, BUDGET & TRAVEL PARTY                         */}
+          {/* ============================================================== */}
+          {currentStep === 4 && (
+            <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               
-              {/* Pace Selection */}
               <div>
-                <label style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <Zap size={20} style={{ color: 'var(--accent-matcha)' }} />
-                  <span>4. Travel Pace</span>
+                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                  Set your pace, budget & travel party
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
+                  Final step! Customize the intensity of your days and your preferred lodging comfort.
+                </p>
+              </div>
+
+              {/* 1. Daily Pace Section */}
+              <div>
+                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <Zap size={18} style={{ color: 'var(--accent-matcha)' }} />
+                  <span>1. Daily Pace & Intensity</span>
                 </label>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {PACE_OPTIONS.map(opt => {
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '1rem',
+                }}>
+                  {PACE_OPTIONS.map((opt) => {
                     const isSelected = pace === opt.id;
                     return (
                       <div
                         key={opt.id}
                         onClick={() => setPace(opt.id)}
-                        className="glass-card"
+                        className="glass-card interactive-hover"
                         style={{
-                          padding: '0.95rem 1.1rem',
+                          padding: '1.25rem',
                           cursor: 'pointer',
-                          border: '1px solid',
+                          borderRadius: '14px',
+                          border: '2px solid',
                           borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.1)' : 'var(--bg-surface-elevated)',
+                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
+                          transition: 'all 0.2s ease',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                          <span style={{ fontWeight: '700', fontSize: '0.95rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                          <span style={{ fontWeight: '800', fontSize: '1rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
                             {opt.title}
                           </span>
-                          <span className="badge badge-gold" style={{ fontSize: '0.7rem' }}>
+                          <span className="badge badge-gold" style={{ fontSize: '0.68rem' }}>
                             {opt.spotsPerDay}
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
                           {opt.subtitle}
-                        </div>
+                        </p>
                       </div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Budget Tier Selection */}
+              {/* 2. Budget Level Section */}
               <div>
-                <label style={{ fontSize: '1.1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <Users size={20} style={{ color: 'var(--accent-indigo)' }} />
-                  <span>5. Travel Style & Budget</span>
+                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <Compass size={18} style={{ color: 'var(--accent-gold)' }} />
+                  <span>2. Accommodation & Travel Budget</span>
                 </label>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {BUDGET_TIERS.map(tier => {
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '1rem',
+                }}>
+                  {BUDGET_TIERS.map((tier) => {
                     const isSelected = budget === tier.id;
                     return (
                       <div
                         key={tier.id}
                         onClick={() => setBudget(tier.id)}
-                        className="glass-card"
+                        className="glass-card interactive-hover"
                         style={{
-                          padding: '0.95rem 1.1rem',
+                          padding: '1.25rem',
                           cursor: 'pointer',
-                          border: '1px solid',
+                          borderRadius: '14px',
+                          border: '2px solid',
                           borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.1)' : 'var(--bg-surface-elevated)',
+                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
+                          transition: 'all 0.2s ease',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-                          <span style={{ fontWeight: '700', fontSize: '0.95rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                          <span style={{ fontWeight: '800', fontSize: '1rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
                             {tier.title}
                           </span>
-                          <span style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--accent-gold)' }}>
+                          <span style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--accent-gold)' }}>
                             ~¥{tier.dailyJPY.toLocaleString()}/day
                           </span>
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: '0.5rem' }}>
                           {tier.sub}
+                        </p>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-matcha)', fontWeight: '600' }}>
+                          {tier.hotelBadge}
                         </div>
                       </div>
                     );
@@ -374,62 +774,113 @@ export default function PlannerForm({
                 </div>
               </div>
 
-            </div>
+              {/* 3. Travel Party Size Section */}
+              <div>
+                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <Users size={18} style={{ color: 'var(--accent-indigo)' }} />
+                  <span>3. Who are you traveling with?</span>
+                </label>
 
-            {/* Travelers Count */}
-            <div>
-              <label style={{ fontSize: '0.95rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <span>Travelers in your party:</span>
-              </label>
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                {[1, 2, 3, 4, 6].map(num => (
-                  <button
-                    key={num}
-                    type="button"
-                    onClick={() => setTravelers(num)}
-                    style={{
-                      padding: '0.5rem 1.2rem',
-                      borderRadius: '8px',
-                      fontSize: '0.9rem',
-                      fontWeight: travelers === num ? '700' : '500',
-                      border: '1px solid',
-                      borderColor: travelers === num ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                      backgroundColor: travelers === num ? 'var(--accent-crimson)' : 'var(--bg-surface-elevated)',
-                      color: travelers === num ? '#ffffff' : 'var(--text-primary)',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {num === 1 ? 'Solo (1)' : num === 2 ? 'Couple (2)' : `${num} People`}
-                  </button>
-                ))}
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {[
+                    { num: 1, label: 'Solo Adventurer' },
+                    { num: 2, label: 'Couple (2)' },
+                    { num: 3, label: 'Small Group (3)' },
+                    { num: 4, label: 'Family / Friends (4)' },
+                    { num: 6, label: 'Large Group (6+)' }
+                  ].map((item) => (
+                    <button
+                      key={item.num}
+                      type="button"
+                      onClick={() => setTravelers(item.num)}
+                      style={{
+                        padding: '0.65rem 1.25rem',
+                        borderRadius: '10px',
+                        fontSize: '0.9rem',
+                        fontWeight: travelers === item.num ? '800' : '600',
+                        border: '1px solid',
+                        borderColor: travelers === item.num ? 'var(--accent-crimson)' : 'var(--border-subtle)',
+                        backgroundColor: travelers === item.num ? 'var(--accent-crimson)' : 'var(--bg-surface-elevated)',
+                        color: travelers === item.num ? '#ffffff' : 'var(--text-secondary)',
+                        boxShadow: travelers === item.num ? '0 4px 15px rgba(230, 57, 70, 0.4)' : 'none',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Generate Itinerary Button */}
-            <div style={{ textAlign: 'center', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* BOTTOM STEP CONTROLS (Back & Next / Generate)                  */}
+          {/* ============================================================== */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: '2.5rem',
+            marginTop: '2.5rem',
+            borderTop: '1px solid var(--border-subtle)',
+          }}>
+            {/* Back Button */}
+            {currentStep > 1 ? (
+              <button
+                type="button"
+                onClick={handleBack}
+                className="btn-secondary"
+                style={{ padding: '0.85rem 1.6rem', fontSize: '0.95rem' }}
+              >
+                <ArrowLeft size={18} />
+                <span>Back</span>
+              </button>
+            ) : (
+              <div /> /* Spacer */
+            )}
+
+            {/* Next / Submit Button */}
+            {currentStep < 4 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                className="btn-primary"
+                style={{ padding: '0.85rem 2rem', fontSize: '0.98rem' }}
+              >
+                <span>Next: {stepsMeta[currentStep].title}</span>
+                <ArrowRight size={18} />
+              </button>
+            ) : (
               <button
                 type="button"
                 onClick={onGenerateItinerary}
                 className="btn-primary"
                 style={{
-                  fontSize: '1.15rem',
-                  padding: '1.1rem 2.8rem',
-                  borderRadius: '12px',
-                  width: '100%',
-                  maxWidth: '480px',
+                  padding: '1rem 2.4rem',
+                  fontSize: '1.05rem',
+                  background: 'linear-gradient(135deg, #e63946, #c1121f, #f4a261)',
+                  boxShadow: '0 6px 25px rgba(230, 57, 70, 0.55)',
                 }}
               >
-                <Sparkles size={22} />
+                <Sparkles size={20} />
                 <span>Generate Smart Japan Itinerary</span>
               </button>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
-                Generates day-by-day stops, bullet train connections, route map & estimated cost analysis
-              </div>
-            </div>
-
+            )}
           </div>
+
         </div>
+
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .hide-on-mobile {
+            display: none !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }
