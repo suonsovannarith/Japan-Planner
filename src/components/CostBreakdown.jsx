@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, PieChart, TrendingUp, Building, Train, Utensils, Ticket, Wifi, Sparkles, Info } from 'lucide-react';
+import { DollarSign, PieChart, TrendingUp, Building, Train, Utensils, Ticket, Wifi, Sparkles, Info, Wallet } from 'lucide-react';
 import { formatDualPrice, JPY_PER_USD } from '../data/currency';
 
 export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency }) {
@@ -140,6 +140,97 @@ export default function CostBreakdown({ itinerary, currency = 'JPY', setCurrency
             </div>
           </div>
         </div>
+
+        {/* Target Budget Alignment Card */}
+        {summary.budgetAnalysis && (
+          <div className="glass-card" style={{
+            padding: '1.5rem 1.75rem',
+            marginBottom: '2rem',
+            borderRadius: '20px',
+            backgroundColor: summary.budgetAnalysis.status === 'under' 
+              ? 'rgba(42, 157, 143, 0.08)' 
+              : 'rgba(230, 57, 70, 0.08)',
+            border: `1px solid ${summary.budgetAnalysis.status === 'under' ? 'rgba(42, 157, 143, 0.35)' : 'rgba(230, 57, 70, 0.35)'}`,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <Wallet size={20} style={{ color: summary.budgetAnalysis.status === 'under' ? 'var(--accent-matcha)' : 'var(--accent-crimson)' }} />
+                <h3 style={{ fontSize: '1.15rem', fontWeight: '800', margin: 0 }}>
+                  Target Budget vs. Calculated Trip Spend
+                </h3>
+              </div>
+              <span className={`badge ${summary.budgetAnalysis.status === 'under' ? 'badge-matcha' : 'badge-crimson'}`} style={{ fontWeight: '800', fontSize: '0.85rem' }}>
+                {summary.budgetAnalysis.status === 'under'
+                  ? `✓ Within Budget (${summary.budgetAnalysis.percentUsed}% Allocated)`
+                  : `⚠ Exceeds Budget (${summary.budgetAnalysis.percentUsed}% of Target)`}
+              </span>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1.25rem',
+              marginBottom: '1.25rem',
+            }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                  Target Budget ({summary.travelers} {summary.travelers === 1 ? 'Traveler' : 'Travelers'})
+                </div>
+                <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+                  {formatDualPrice(summary.budgetAnalysis.targetBudgetJPY, currency).full}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                  Base Trip Cost (Calculated)
+                </div>
+                <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--accent-gold)' }}>
+                  {formatDualPrice(summary.budgetAnalysis.calculatedJPY, currency).full}
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                  {summary.budgetAnalysis.status === 'under' ? 'Safety Buffer' : 'Estimated Overage'}
+                </div>
+                <div style={{
+                  fontSize: '1.35rem',
+                  fontWeight: '800',
+                  color: summary.budgetAnalysis.status === 'under' ? 'var(--accent-matcha)' : 'var(--accent-crimson)'
+                }}>
+                  {summary.budgetAnalysis.status === 'under' ? '+' : '-'}
+                  {formatDualPrice(Math.abs(summary.budgetAnalysis.diffJPY), currency).full}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Meter Bar */}
+            <div style={{ position: 'relative', width: '100%', marginBottom: '0.65rem' }}>
+              <div style={{
+                height: '10px',
+                borderRadius: '999px',
+                backgroundColor: 'var(--bg-secondary)',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.min(100, summary.budgetAnalysis.percentUsed)}%`,
+                  backgroundColor: summary.budgetAnalysis.status === 'under'
+                    ? (summary.budgetAnalysis.percentUsed > 85 ? 'var(--accent-gold)' : 'var(--accent-matcha)')
+                    : 'var(--accent-crimson)',
+                  borderRadius: '999px',
+                  transition: 'width 0.5s ease',
+                }} />
+              </div>
+            </div>
+
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span>{summary.budgetAnalysis.bufferMessage}</span>
+              <span>Based on hotels, transit, dining, and admission estimates</span>
+            </div>
+          </div>
+        )}
 
         {/* Top 3 Dual-Currency Summary Cards */}
         <div style={{

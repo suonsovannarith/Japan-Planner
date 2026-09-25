@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Clock, MapPin, Sparkles, Zap, Users, ArrowRight, ArrowLeft, 
-  Check, Landmark, Utensils, Gamepad2, Mountain, Building2, Brush, Wine, Compass, CheckCircle2
+  Check, Landmark, Utensils, Gamepad2, Mountain, Building2, Brush, Wine, Compass, CheckCircle2, DollarSign, Wallet
 } from 'lucide-react';
 import { INTEREST_CATEGORIES, PACE_OPTIONS, BUDGET_TIERS } from '../data/interests';
+import { JPY_PER_USD, formatDualPrice } from '../data/currency';
 
 // Icon Map helper
 const iconMap = {
@@ -30,9 +31,18 @@ export default function PlannerForm({
   setBudget,
   travelers,
   setTravelers,
+  targetBudget,
+  setTargetBudget,
   onGenerateItinerary
 }) {
   const [currentStep, setCurrentStep] = useState(1);
+  const [budgetCurrency, setBudgetCurrency] = useState('USD'); // 'USD' | 'JPY'
+  const [customBudgetValue, setCustomBudgetValue] = useState(() => {
+    if (targetBudget && targetBudget > 0) {
+      return budgetCurrency === 'USD' ? Math.round(targetBudget / JPY_PER_USD) : targetBudget;
+    }
+    return '';
+  });
 
   // Slider bounds
   const minDays = 3;
@@ -60,52 +70,57 @@ export default function PlannerForm({
     { d: 28, label: '28 Days', sub: '1-Month Grand Expedition' }
   ];
 
-  // Gateways
+  // Starting Gateways with Airport / Station Hub Badges
   const cities = [
     {
       id: 'tokyo',
       name: 'Tokyo',
       kanji: '東京',
-      airport: 'NRT / HND',
-      desc: 'Metropolis, cyberpunk nightlife, teamLab, Harajuku & ancient Asakusa',
+      hubBadge: 'Kanto Hub',
+      airport: 'Narita (NRT) / Haneda (HND)',
+      desc: 'Metropolis, cyberpunk nightlife, teamLab, Shibuya Crossing & ancient Asakusa',
       image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
-      badge: 'Most Popular Hub'
+      badge: 'Most Popular Starting Hub'
     },
     {
       id: 'osaka',
       name: 'Osaka',
       kanji: '大阪',
-      airport: 'KIX Airport',
-      desc: 'The nation’s culinary kitchen, lively Dotonbori neon & Universal Studios',
+      hubBadge: 'Kansai Hub',
+      airport: 'Kansai Int\'l (KIX)',
+      desc: 'The nation’s culinary kitchen, lively Dotonbori neon, Kuidaore & Universal Studios',
       image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=600&q=80',
-      badge: 'Food & Entertainment'
+      badge: 'Food & Nightlife Gateway'
     },
     {
       id: 'kyoto',
       name: 'Kyoto',
       kanji: '京都',
-      airport: 'Via KIX / ITM',
-      desc: 'Imperial heartland with 10,000 Torii gates, bamboo groves & Zen temples',
+      hubBadge: 'Cultural Heartland',
+      airport: 'via Kansai KIX / Shinkansen',
+      desc: '1,000-year imperial soul, 10,000 vermillion Torii gates, bamboo groves & Zen temples',
       image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
-      badge: 'Historic & Cultural'
+      badge: 'Historic & UNESCO Gem'
     },
     {
       id: 'fukuoka',
       name: 'Fukuoka',
       kanji: '福岡',
-      airport: 'FUK Airport',
-      desc: 'Kyushu gateway famous for riverside open-air Yatai food stalls & Hakata ramen',
+      hubBadge: 'Kyushu Hub',
+      airport: 'Fukuoka Int\'l (FUK)',
+      desc: 'Vibrant southern gateway famed for riverside open-air Yatai food carts & Hakata ramen',
       image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=600&q=80',
-      badge: 'Southern Gourmet'
+      badge: 'Southern Gourmet & Hot Springs'
     },
     {
       id: 'hokkaido',
       name: 'Sapporo',
       kanji: '札幌',
-      airport: 'CTS Airport',
-      desc: 'Hokkaido wilderness, alpine snow, Otaru romantic canal & miso ramen',
+      hubBadge: 'Hokkaido Hub',
+      airport: 'New Chitose (CTS)',
+      desc: 'Northern wilderness, champagne powder snow, Otaru romantic canal & miso ramen',
       image: 'https://images.unsplash.com/photo-1578637387939-43c525550085?auto=format&fit=crop&w=600&q=80',
-      badge: 'Northern Nature'
+      badge: 'Alpine Nature & Snow'
     }
   ];
 
@@ -123,7 +138,7 @@ export default function PlannerForm({
     { num: 1, title: 'Trip Duration', short: 'Duration' },
     { num: 2, title: 'Starting Gateway', short: 'Arrival Hub' },
     { num: 3, title: 'Travel Passions', short: 'Vibes' },
-    { num: 4, title: 'Pace & Budget', short: 'Style & Budget' },
+    { num: 4, title: 'Pace & Budget', short: 'Pace & Budget' },
   ];
 
   const handleNext = () => {
@@ -140,16 +155,66 @@ export default function PlannerForm({
     }
   };
 
+  // Quick budget presets calculation based on duration & travelers
+  const budgetPresets = [
+    {
+      tierId: 'budget',
+      name: 'Backpacker / Value',
+      usd: Math.round(duration * travelers * 85),
+      jpy: Math.round(duration * travelers * 85 * JPY_PER_USD),
+      desc: 'Hostels, business hotels, IC card transit, ramen & conbini gems'
+    },
+    {
+      tierId: 'mid',
+      name: 'Balanced Explorer',
+      usd: Math.round(duration * travelers * 175),
+      jpy: Math.round(duration * travelers * 175 * JPY_PER_USD),
+      desc: '3-4 star modern hotels, Shinkansen travel, diverse dining & sights'
+    },
+    {
+      tierId: 'luxury',
+      name: 'Luxury / Ryokan',
+      usd: Math.round(duration * travelers * 380),
+      jpy: Math.round(duration * travelers * 380 * JPY_PER_USD),
+      desc: '5-star premier hotels, private onsen ryokan with Kaiseki feasts'
+    }
+  ];
+
+  const handleSelectBudgetPreset = (preset) => {
+    setBudget(preset.tierId);
+    setTargetBudget(preset.jpy);
+    setCustomBudgetValue(budgetCurrency === 'USD' ? preset.usd : preset.jpy);
+  };
+
+  const handleCustomBudgetChange = (valStr) => {
+    setCustomBudgetValue(valStr);
+    const num = parseFloat(valStr.replace(/[^0-9.]/g, ''));
+    if (!isNaN(num) && num > 0) {
+      const jpyVal = budgetCurrency === 'USD' ? Math.round(num * JPY_PER_USD) : Math.round(num);
+      setTargetBudget(jpyVal);
+    } else {
+      setTargetBudget(null);
+    }
+  };
+
+  const handleToggleBudgetCurrency = (newCurr) => {
+    if (newCurr === budgetCurrency) return;
+    setBudgetCurrency(newCurr);
+    if (targetBudget && targetBudget > 0) {
+      setCustomBudgetValue(newCurr === 'USD' ? Math.round(targetBudget / JPY_PER_USD) : targetBudget);
+    }
+  };
+
   return (
     <section id="planner-wizard" style={{ padding: '2.5rem 0 5rem 0' }}>
-      <div className="container" style={{ maxWidth: '960px' }}>
+      <div className="container" style={{ maxWidth: '980px' }}>
         
         {/* Multi-Step Wizard Card */}
         <div className="glass-card" style={{
           padding: 'clamp(2rem, 5vw, 3.5rem)',
           border: '1px solid var(--border-subtle)',
           borderRadius: '24px',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45)',
+          boxShadow: 'var(--glass-shadow)',
           position: 'relative',
         }}>
 
@@ -169,7 +234,7 @@ export default function PlannerForm({
                 <span className="badge badge-crimson" style={{ letterSpacing: '0.08em', fontWeight: '800' }}>
                   PHASE 0{currentStep} / 04
                 </span>
-                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                <span style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', fontWeight: '700' }}>
                   {stepsMeta[currentStep - 1].title}
                 </span>
               </div>
@@ -188,17 +253,17 @@ export default function PlannerForm({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.35rem',
-                        padding: '0.35rem 0.75rem',
+                        padding: '0.35rem 0.8rem',
                         borderRadius: '9999px',
-                        fontSize: '0.78rem',
-                        fontWeight: isCurrent ? '700' : '500',
+                        fontSize: '0.8rem',
+                        fontWeight: isCurrent ? '800' : '600',
                         backgroundColor: isCurrent 
                           ? 'rgba(230, 57, 70, 0.18)' 
                           : isDone 
-                          ? 'rgba(42, 157, 143, 0.12)' 
+                          ? 'rgba(42, 157, 143, 0.14)' 
                           : 'var(--bg-surface-elevated)',
                         color: isCurrent 
-                          ? '#ff4d6d' 
+                          ? 'var(--accent-crimson)' 
                           : isDone 
                           ? 'var(--accent-matcha)' 
                           : 'var(--text-muted)',
@@ -206,7 +271,7 @@ export default function PlannerForm({
                         borderColor: isCurrent 
                           ? 'var(--accent-crimson)' 
                           : isDone 
-                          ? 'rgba(42, 157, 143, 0.3)' 
+                          ? 'rgba(42, 157, 143, 0.35)' 
                           : 'var(--border-subtle)',
                         transition: 'all 0.2s ease',
                       }}
@@ -223,11 +288,11 @@ export default function PlannerForm({
               </div>
             </div>
 
-            {/* Seamless Top Animated Progress Bar */}
+            {/* Top Animated Progress Bar */}
             <div style={{
               width: '100%',
               height: '6px',
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              backgroundColor: 'rgba(148, 163, 184, 0.15)',
               borderRadius: '9999px',
               overflow: 'hidden',
             }}>
@@ -250,7 +315,7 @@ export default function PlannerForm({
             <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               
               <div>
-                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.6rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
                   How long is your Japan journey?
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
@@ -286,17 +351,17 @@ export default function PlannerForm({
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '2.4rem', fontWeight: '800', color: 'var(--accent-crimson)', lineHeight: 1 }}>
+                      <span style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--accent-crimson)', lineHeight: 1 }}>
                         {duration}
                       </span>
-                      <span style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      <span style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--text-primary)' }}>
                         Days
                       </span>
                       <span style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>
                         ({duration - 1} Nights)
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                    <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                       {duration <= 5 
                         ? 'Quick City Sprint — Focused on 1 core region'
                         : duration <= 10 
@@ -308,7 +373,7 @@ export default function PlannerForm({
                   </div>
                 </div>
 
-                <div className="badge badge-gold" style={{ fontSize: '0.8rem', padding: '0.4rem 0.9rem' }}>
+                <div className="badge badge-gold" style={{ fontSize: '0.8rem', padding: '0.45rem 1rem' }}>
                   {duration >= 14 ? 'Ideal for JR Passes' : 'Point-to-Point Transit'}
                 </div>
               </div>
@@ -324,7 +389,7 @@ export default function PlannerForm({
                     onChange={(e) => setDuration(Number(e.target.value))}
                     className="custom-range-slider"
                     style={{
-                      background: `linear-gradient(to right, #e63946 0%, #e63946 ${sliderPercentage}%, rgba(255, 255, 255, 0.12) ${sliderPercentage}%, rgba(255, 255, 255, 0.12) 100%)`,
+                      background: `linear-gradient(to right, #e63946 0%, #e63946 ${sliderPercentage}%, rgba(148, 163, 184, 0.2) ${sliderPercentage}%, rgba(148, 163, 184, 0.2) 100%)`,
                     }}
                   />
                 </div>
@@ -356,13 +421,13 @@ export default function PlannerForm({
                         <div style={{
                           width: '2px',
                           height: '9px',
-                          backgroundColor: isSelected ? 'var(--accent-crimson)' : 'rgba(255, 255, 255, 0.25)',
+                          backgroundColor: isSelected ? 'var(--accent-crimson)' : 'rgba(148, 163, 184, 0.4)',
                           marginBottom: '6px',
                           transition: 'all 0.2s ease',
                         }} />
                         <span style={{
                           fontSize: '0.8rem',
-                          fontWeight: isSelected ? '800' : '500',
+                          fontWeight: isSelected ? '800' : '600',
                           color: isSelected ? 'var(--accent-crimson)' : 'var(--text-muted)',
                           whiteSpace: 'nowrap',
                           transition: 'all 0.2s ease',
@@ -377,7 +442,7 @@ export default function PlannerForm({
 
               {/* Quick Preset Cards Grid */}
               <div>
-                <label style={{ fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'block', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: '800', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', display: 'block', marginBottom: '1rem' }}>
                   Or Choose a Popular Preset:
                 </label>
                 <div style={{
@@ -396,7 +461,7 @@ export default function PlannerForm({
                           padding: '1.1rem 1.25rem',
                           cursor: 'pointer',
                           borderRadius: '14px',
-                          border: '1px solid',
+                          border: '2px solid',
                           borderColor: isActive ? 'var(--accent-crimson)' : 'var(--border-subtle)',
                           backgroundColor: isActive ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
                           transition: 'all 0.2s ease',
@@ -406,7 +471,7 @@ export default function PlannerForm({
                           <span style={{
                             fontWeight: '800',
                             fontSize: '1.05rem',
-                            color: isActive ? '#ff4d6d' : 'var(--text-primary)',
+                            color: isActive ? 'var(--accent-crimson)' : 'var(--text-primary)',
                           }}>
                             {preset.label}
                           </span>
@@ -427,17 +492,17 @@ export default function PlannerForm({
           )}
 
           {/* ============================================================== */}
-          {/* PHASE 2: STARTING POINT & ENTRY GATEWAY                        */}
+          {/* PHASE 2: STARTING POINT & AIRPORT GATEWAY                     */}
           {/* ============================================================== */}
           {currentStep === 2 && (
             <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               
               <div>
-                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
-                  Where does your journey begin?
+                <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.6rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                  Where do you want to start your journey?
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
-                  Choose your arrival airport or starting city. Bullet train connections and domestic transit will branch from here.
+                  Select your arrival hub. The entire itinerary, day sequence, and route map will adapt dynamically to originate from here!
                 </p>
               </div>
 
@@ -457,8 +522,8 @@ export default function PlannerForm({
                       style={{
                         overflow: 'hidden',
                         cursor: 'pointer',
-                        borderRadius: '16px',
-                        border: '2px solid',
+                        borderRadius: '18px',
+                        border: '2.5px solid',
                         borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
                         backgroundColor: 'var(--bg-surface-elevated)',
                         boxShadow: isSelected ? '0 12px 30px rgba(230, 57, 70, 0.25)' : 'none',
@@ -469,7 +534,7 @@ export default function PlannerForm({
                       {/* Thumbnail Header */}
                       <div style={{
                         position: 'relative',
-                        height: '140px',
+                        height: '145px',
                         backgroundImage: `url(${city.image})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
@@ -477,43 +542,49 @@ export default function PlannerForm({
                         <div style={{
                           position: 'absolute',
                           inset: 0,
-                          background: 'linear-gradient(to top, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0.2) 100%)',
+                          background: 'linear-gradient(to top, rgba(10, 13, 20, 0.95) 0%, rgba(10, 13, 20, 0.25) 100%)',
                         }} />
 
                         {/* Top Badges */}
                         <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span className="badge" style={{ backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(8px)', color: '#fff' }}>
+                          <span className="badge" style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)', color: '#fff', fontSize: '0.72rem' }}>
                             {city.airport}
                           </span>
                           {isSelected && (
                             <div style={{
-                              width: '24px',
-                              height: '24px',
+                              width: '26px',
+                              height: '26px',
                               borderRadius: '50%',
                               backgroundColor: 'var(--accent-crimson)',
                               color: '#fff',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
+                              boxShadow: '0 0 10px rgba(230, 57, 70, 0.8)',
                             }}>
-                              <Check size={14} strokeWidth={3} />
+                              <Check size={16} strokeWidth={3} />
                             </div>
                           )}
                         </div>
 
-                        {/* City Name in image bottom */}
-                        <div style={{ position: 'absolute', bottom: '12px', left: '14px', display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '1.4rem', fontWeight: '800', color: '#fff' }}>
-                            {city.name}
-                          </span>
-                          <span className="kanji-text" style={{ fontSize: '1.1rem', color: 'var(--accent-gold)' }}>
-                            {city.kanji}
+                        {/* City Name & Hub in image bottom */}
+                        <div style={{ position: 'absolute', bottom: '12px', left: '14px', right: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '1.45rem', fontWeight: '800', color: '#fff' }}>
+                              {city.name}
+                            </span>
+                            <span className="kanji-text" style={{ fontSize: '1.1rem', color: 'var(--accent-gold)' }}>
+                              {city.kanji}
+                            </span>
+                          </div>
+                          <span className="badge badge-crimson" style={{ fontSize: '0.68rem', backgroundColor: 'rgba(230, 57, 70, 0.4)', color: '#fff' }}>
+                            {city.hubBadge}
                           </span>
                         </div>
                       </div>
 
                       {/* Card Body */}
-                      <div style={{ padding: '1rem 1.25rem' }}>
+                      <div style={{ padding: '1.1rem 1.25rem' }}>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '0.75rem' }}>
                           {city.desc}
                         </div>
@@ -537,7 +608,7 @@ export default function PlannerForm({
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                  <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.6rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
                     What excites you most?
                   </h2>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
@@ -547,11 +618,11 @@ export default function PlannerForm({
 
                 <div style={{
                   background: 'var(--bg-surface-elevated)',
-                  padding: '0.45rem 1rem',
+                  padding: '0.45rem 1.1rem',
                   borderRadius: '9999px',
                   border: '1px solid var(--border-subtle)',
                   fontSize: '0.85rem',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   color: 'var(--accent-gold)',
                 }}>
                   {interests.length} of {INTEREST_CATEGORIES.length} Selected
@@ -625,7 +696,7 @@ export default function PlannerForm({
                           </div>
 
                           <div>
-                            <div style={{ fontWeight: '800', fontSize: '1.05rem', color: isSelected ? '#fff' : 'var(--text-primary)' }}>
+                            <div style={{ fontWeight: '800', fontSize: '1.05rem', color: isSelected ? 'var(--text-primary)' : 'var(--text-primary)' }}>
                               {category.title}
                             </div>
                             <span className="kanji-text" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -648,7 +719,7 @@ export default function PlannerForm({
                               fontSize: '0.72rem',
                               padding: '0.2rem 0.55rem',
                               borderRadius: '6px',
-                              backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                              backgroundColor: 'rgba(148, 163, 184, 0.12)',
                               color: 'var(--text-muted)',
                             }}
                           >
@@ -671,17 +742,17 @@ export default function PlannerForm({
             <div className="wizard-step-enter" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               
               <div>
-                <h2 style={{ fontSize: 'clamp(1.8rem, 3.8vw, 2.5rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
+                <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.6rem)', fontWeight: '800', marginBottom: '0.6rem' }}>
                   Set your pace, budget & travel party
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.65' }}>
-                  Final step! Customize the intensity of your days and your preferred lodging comfort.
+                  Tailor the intensity of your days, lodging comfort tier, and your target trip budget.
                 </p>
               </div>
 
               {/* 1. Daily Pace Section */}
               <div>
-                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '1.05rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                   <Zap size={18} style={{ color: 'var(--accent-matcha)' }} />
                   <span>1. Daily Pace & Intensity</span>
                 </label>
@@ -709,14 +780,14 @@ export default function PlannerForm({
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                          <span style={{ fontWeight: '800', fontSize: '1rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
+                          <span style={{ fontWeight: '800', fontSize: '1rem', color: isSelected ? 'var(--accent-crimson)' : 'var(--text-primary)' }}>
                             {opt.title}
                           </span>
                           <span className="badge badge-gold" style={{ fontSize: '0.68rem' }}>
                             {opt.spotsPerDay}
                           </span>
                         </div>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
                           {opt.subtitle}
                         </p>
                       </div>
@@ -725,58 +796,155 @@ export default function PlannerForm({
                 </div>
               </div>
 
-              {/* 2. Budget Level Section */}
-              <div>
-                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <Compass size={18} style={{ color: 'var(--accent-gold)' }} />
-                  <span>2. Accommodation & Travel Budget</span>
-                </label>
+              {/* 2. Target Total Trip Budget Input */}
+              <div style={{
+                padding: '1.5rem',
+                borderRadius: '16px',
+                backgroundColor: 'var(--bg-surface-elevated)',
+                border: '1px solid var(--border-subtle)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                  <label style={{ fontSize: '1.05rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Wallet size={18} style={{ color: 'var(--accent-gold)' }} />
+                    <span>2. Target Total Trip Budget (Optional Target)</span>
+                  </label>
 
+                  {/* Currency Toggle */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'var(--bg-primary)',
+                    padding: '0.25rem',
+                    borderRadius: '10px',
+                    border: '1px solid var(--border-subtle)',
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBudgetCurrency('USD')}
+                      style={{
+                        padding: '0.35rem 0.8rem',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: budgetCurrency === 'USD' ? '800' : '600',
+                        backgroundColor: budgetCurrency === 'USD' ? 'var(--accent-crimson)' : 'transparent',
+                        color: budgetCurrency === 'USD' ? '#fff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      $ USD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleBudgetCurrency('JPY')}
+                      style={{
+                        padding: '0.35rem 0.8rem',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: budgetCurrency === 'JPY' ? '800' : '600',
+                        backgroundColor: budgetCurrency === 'JPY' ? 'var(--accent-crimson)' : 'transparent',
+                        color: budgetCurrency === 'JPY' ? '#fff' : 'var(--text-secondary)',
+                      }}
+                    >
+                      ¥ JPY
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Budget Tier Presets */}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-                  gap: '1rem',
+                  gap: '0.85rem',
+                  marginBottom: '1.25rem',
                 }}>
-                  {BUDGET_TIERS.map((tier) => {
-                    const isSelected = budget === tier.id;
+                  {budgetPresets.map((preset) => {
+                    const isSelected = budget === preset.tierId;
+                    const priceLabel = budgetCurrency === 'USD' 
+                      ? `$${preset.usd.toLocaleString()}` 
+                      : `¥${preset.jpy.toLocaleString()}`;
+                    const secondaryPrice = budgetCurrency === 'USD'
+                      ? `~¥${preset.jpy.toLocaleString()}`
+                      : `~$${preset.usd.toLocaleString()} USD`;
+
                     return (
                       <div
-                        key={tier.id}
-                        onClick={() => setBudget(tier.id)}
+                        key={preset.tierId}
+                        onClick={() => handleSelectBudgetPreset(preset)}
                         className="glass-card interactive-hover"
                         style={{
-                          padding: '1.25rem',
+                          padding: '1rem',
                           cursor: 'pointer',
-                          borderRadius: '14px',
+                          borderRadius: '12px',
                           border: '2px solid',
                           borderColor: isSelected ? 'var(--accent-crimson)' : 'var(--border-subtle)',
-                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-surface-elevated)',
+                          backgroundColor: isSelected ? 'rgba(230, 57, 70, 0.12)' : 'var(--bg-primary)',
                           transition: 'all 0.2s ease',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                          <span style={{ fontWeight: '800', fontSize: '1rem', color: isSelected ? '#ff4d6d' : 'var(--text-primary)' }}>
-                            {tier.title}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                          <span style={{ fontWeight: '800', fontSize: '0.95rem', color: isSelected ? 'var(--accent-crimson)' : 'var(--text-primary)' }}>
+                            {preset.name}
                           </span>
-                          <span style={{ fontWeight: '800', fontSize: '0.85rem', color: 'var(--accent-gold)' }}>
-                            ~¥{tier.dailyJPY.toLocaleString()}/day
+                          <span style={{ fontWeight: '800', fontSize: '0.95rem', color: 'var(--accent-gold)' }}>
+                            {priceLabel}
                           </span>
                         </div>
-                        <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.45, marginBottom: '0.5rem' }}>
-                          {tier.sub}
-                        </p>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--accent-matcha)', fontWeight: '600' }}>
-                          {tier.hotelBadge}
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                          {secondaryPrice}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                          {preset.desc}
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Custom Number Input Field */}
+                <div>
+                  <label style={{ fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>
+                    Or enter your exact custom target budget for all {travelers} travelers:
+                  </label>
+                  <div style={{ position: 'relative', maxWidth: '320px' }}>
+                    <div style={{
+                      position: 'absolute',
+                      left: '14px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontWeight: '800',
+                      color: 'var(--accent-gold)',
+                      fontSize: '1.1rem',
+                    }}>
+                      {budgetCurrency === 'USD' ? '$' : '¥'}
+                    </div>
+                    <input
+                      type="number"
+                      placeholder={budgetCurrency === 'USD' ? 'e.g. 3000' : 'e.g. 450000'}
+                      value={customBudgetValue}
+                      onChange={(e) => handleCustomBudgetChange(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem 0.75rem 2.4rem',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-subtle)',
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '1rem',
+                        fontWeight: '700',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  {targetBudget && targetBudget > 0 && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.4rem' }}>
+                      Active Target: <strong>{formatDualPrice(targetBudget, budgetCurrency).full}</strong>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 3. Travel Party Size Section */}
               <div>
-                <label style={{ fontSize: '1rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '1.05rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                   <Users size={18} style={{ color: 'var(--accent-indigo)' }} />
                   <span>3. Who are you traveling with?</span>
                 </label>

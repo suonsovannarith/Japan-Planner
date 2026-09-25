@@ -27,6 +27,7 @@ export default function App() {
   const [pace, setPace] = useState('balanced');
   const [budget, setBudget] = useState('mid');
   const [travelers, setTravelers] = useState(2);
+  const [targetBudget, setTargetBudget] = useState(null);
 
   // Sync theme attribute to document body
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function App() {
       if (params.get('pace')) setPace(params.get('pace'));
       if (params.get('budget')) setBudget(params.get('budget'));
       if (params.get('travelers')) setTravelers(Number(params.get('travelers')));
+      if (params.get('targetBudget')) setTargetBudget(Number(params.get('targetBudget')));
     } catch (e) {
       console.error(e);
     }
@@ -55,9 +57,10 @@ export default function App() {
       interests,
       pace,
       budget,
-      travelers
+      travelers,
+      targetBudget
     });
-  }, [duration, startingCity, interests, pace, budget, travelers]);
+  }, [duration, startingCity, interests, pace, budget, travelers, targetBudget]);
 
   // Trigger celebration and navigate to itinerary view
   const handleGenerateItinerary = () => {
@@ -155,6 +158,8 @@ export default function App() {
             setBudget={setBudget}
             travelers={travelers}
             setTravelers={setTravelers}
+            targetBudget={targetBudget}
+            setTargetBudget={setTargetBudget}
             onGenerateItinerary={handleGenerateItinerary}
           />
         )}

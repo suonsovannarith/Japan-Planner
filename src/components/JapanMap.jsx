@@ -258,30 +258,52 @@ export default function JapanMap({ itinerary, selectedCityKey, onSelectCity }) {
                       {city.name}
                     </text>
 
-                    {/* Badge indicator for Day # if in itinerary */}
-                    {itineraryDayIndex >= 0 && (
-                      <rect
-                        x={x - 20}
-                        y={y - 18}
-                        width="18"
-                        height="14"
-                        rx="4"
-                        fill="#e63946"
-                      />
-                    )}
-                    {itineraryDayIndex >= 0 && (
-                      <text
-                        x={x - 11}
-                        y={y - 8}
-                        textAnchor="middle"
-                        fill="#ffffff"
-                        fontSize="9px"
-                        fontWeight="800"
-                        fontFamily="var(--font-heading)"
-                      >
-                        {itineraryDayIndex + 1}
-                      </text>
-                    )}
+                    {/* Badge indicator for Day # or START if starting gateway */}
+                    {itineraryDayIndex === 0 ? (
+                      <g>
+                        <rect
+                          x={x - 24}
+                          y={y - 20}
+                          width="32"
+                          height="15"
+                          rx="4"
+                          fill="var(--accent-gold)"
+                        />
+                        <text
+                          x={x - 8}
+                          y={y - 9}
+                          textAnchor="middle"
+                          fill="#0f172a"
+                          fontSize="8.5px"
+                          fontWeight="900"
+                          fontFamily="var(--font-heading)"
+                        >
+                          START
+                        </text>
+                      </g>
+                    ) : itineraryDayIndex > 0 ? (
+                      <g>
+                        <rect
+                          x={x - 20}
+                          y={y - 18}
+                          width="18"
+                          height="14"
+                          rx="4"
+                          fill="#e63946"
+                        />
+                        <text
+                          x={x - 11}
+                          y={y - 8}
+                          textAnchor="middle"
+                          fill="#ffffff"
+                          fontSize="9px"
+                          fontWeight="800"
+                          fontFamily="var(--font-heading)"
+                        >
+                          {itineraryDayIndex + 1}
+                        </text>
+                      </g>
+                    ) : null}
                   </g>
                 );
               })}

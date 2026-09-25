@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Calendar, Train, Clock, MapPin, DollarSign, Lightbulb, 
   CheckCircle, Bookmark, ExternalLink, ChevronDown, ChevronUp, Sparkles, 
-  ArrowRight, Share2, Copy, Check, RotateCcw, Compass, Sun, Sunset, Moon, Ticket
+  ArrowRight, Share2, Copy, Check, RotateCcw, Compass, Sun, Sunset, Moon, Ticket, Wallet
 } from 'lucide-react';
 import { formatDualPrice, JPY_PER_USD } from '../data/currency';
 
@@ -217,6 +217,100 @@ export default function ItineraryView({
               </div>
             </div>
           </div>
+
+          {/* Target Budget Alignment Meter */}
+          {itinerary.summary.budgetAnalysis && (
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              borderRadius: '16px',
+              backgroundColor: itinerary.summary.budgetAnalysis.status === 'under' 
+                ? 'rgba(42, 157, 143, 0.08)' 
+                : 'rgba(230, 57, 70, 0.08)',
+              border: `1px solid ${itinerary.summary.budgetAnalysis.status === 'under' ? 'rgba(42, 157, 143, 0.35)' : 'rgba(230, 57, 70, 0.35)'}`,
+              marginBottom: '1.75rem',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.9rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Wallet size={19} style={{ color: itinerary.summary.budgetAnalysis.status === 'under' ? 'var(--accent-matcha)' : 'var(--accent-crimson)' }} />
+                  <span style={{ fontWeight: '800', fontSize: '0.98rem' }}>
+                    Target Budget Alignment
+                  </span>
+                </div>
+                <span className={`badge ${itinerary.summary.budgetAnalysis.status === 'under' ? 'badge-matcha' : 'badge-crimson'}`} style={{ fontWeight: '800' }}>
+                  {itinerary.summary.budgetAnalysis.status === 'under'
+                    ? `✓ Within Budget (${itinerary.summary.budgetAnalysis.percentUsed}% Allocated)`
+                    : `⚠ Exceeds Target (${itinerary.summary.budgetAnalysis.percentUsed}% of Target)`}
+                </span>
+              </div>
+
+              {/* Comparison Stats Row */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '1rem',
+                marginBottom: '1rem',
+              }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
+                    Target Budget
+                  </div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+                    {formatDualPrice(itinerary.summary.budgetAnalysis.targetBudgetJPY, currency).full}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
+                    Calculated Estimate
+                  </div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--accent-gold)' }}>
+                    {formatDualPrice(itinerary.summary.budgetAnalysis.calculatedJPY, currency).full}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
+                    {itinerary.summary.budgetAnalysis.status === 'under' ? 'Remaining Buffer' : 'Variance Over Target'}
+                  </div>
+                  <div style={{
+                    fontSize: '1.2rem',
+                    fontWeight: '800',
+                    color: itinerary.summary.budgetAnalysis.status === 'under' ? 'var(--accent-matcha)' : 'var(--accent-crimson)'
+                  }}>
+                    {itinerary.summary.budgetAnalysis.status === 'under' ? '+' : '-'}
+                    {formatDualPrice(Math.abs(itinerary.summary.budgetAnalysis.diffJPY), currency).full}
+                  </div>
+                </div>
+              </div>
+
+              {/* Visual Progress Bar Meter */}
+              <div style={{ position: 'relative', width: '100%', marginBottom: '0.5rem' }}>
+                <div style={{
+                  height: '10px',
+                  borderRadius: '999px',
+                  backgroundColor: 'var(--bg-secondary)',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.min(100, itinerary.summary.budgetAnalysis.percentUsed)}%`,
+                    backgroundColor: itinerary.summary.budgetAnalysis.status === 'under'
+                      ? (itinerary.summary.budgetAnalysis.percentUsed > 85 ? 'var(--accent-gold)' : 'var(--accent-matcha)')
+                      : 'var(--accent-crimson)',
+                    borderRadius: '999px',
+                    transition: 'width 0.5s ease',
+                  }} />
+                </div>
+              </div>
+
+              {/* Explanatory Note */}
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span>{itinerary.summary.budgetAnalysis.bufferMessage}</span>
+                <span>Covers lodging, 3 daily meals, intercity Shinkansen & curated attractions for all {itinerary.summary.travelers} {itinerary.summary.travelers === 1 ? 'traveler' : 'travelers'}</span>
+              </div>
+            </div>
+          )}
 
           {/* Action Bar (Export, Copy, Restart, View on Map) */}
           <div style={{
